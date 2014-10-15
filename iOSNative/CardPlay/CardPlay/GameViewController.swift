@@ -24,7 +24,11 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     let CARD_RESIZE_FACTOR = CGFloat(0.1)
     
     var handPosition:SCNVector3!
-    var handCards:[CardNode] = []
+    //var handCards:[CardNode] = []
+     var handCards:NSMutableArray = []
+    
+    //var deckCards:[CardNode] = []
+    var deckCards:NSMutableArray = []
     
     var cardAtlas:[String: String]!
     var cardManifest:[[String]] = []
@@ -319,6 +323,9 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             
             cardNodes.append(cardNode)
             
+            //deckCards.append(cardNode)
+            deckCards.addObject(cardNode)
+            
             _scene.rootNode.addChildNode(cardNode.rootNode)
         }
     }
@@ -415,8 +422,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         println("moveCardIntoHand: \(cardNode)")
         
-        
-        handCards.append(cardNode)
+        deckCards.removeObject(cardNode)
+        handCards.addObject(cardNode)
         
         cardNode.updateRenderMode(CardNode.RenderModes.FrontAndBack)
         
@@ -425,13 +432,9 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         SCNTransaction.begin()
         SCNTransaction.setAnimationDuration(actionDuration)
         
-        println("card height \(index)")
-        
-        // Lay card flat
+        // Card upright
         println("card rotation x \(cardNode.rootNode.rotation.x)")
-        //cardNode.rotation.x = CFloat(M_PI / 2)
-        //cardNode.rotation.x = 0.5
-        
+
         cardNode.rootNode.runAction(SCNAction.rotateByX(-CGFloat(M_PI / 2), y: 0, z: 0, duration: actionDuration))
         
         

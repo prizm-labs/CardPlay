@@ -85,6 +85,7 @@
 		32788C9E19EE18D6003EFD9E /* back-default.png in Resources */ = {isa = PBXBuildFile; fileRef = 32788C9D19EE18D6003EFD9E /* back-default.png */; };
 		32788CA019EE30D2003EFD9E /* card-manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 32788C9F19EE30D2003EFD9E /* card-manifest.json */; };
 		32788CA219EE5ED4003EFD9E /* CardNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32788CA119EE5ED4003EFD9E /* CardNode.swift */; };
+		32788CA419EE7A3C003EFD9E /* HandManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32788CA319EE7A3C003EFD9E /* HandManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -179,7 +180,8 @@
 		3252F2D619EDD61D00DFB721 /* red_joker.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = red_joker.png; sourceTree = "<group>"; };
 		32788C9D19EE18D6003EFD9E /* back-default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "back-default.png"; sourceTree = "<group>"; };
 		32788C9F19EE30D2003EFD9E /* card-manifest.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "card-manifest.json"; sourceTree = "<group>"; };
-		32788CA119EE5ED4003EFD9E /* CardNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CardNode.swift; sourceTree = "<group>"; };
+		32788CA119EE5ED4003EFD9E /* CardNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CardNode.swift; path = ../CardNode.swift; sourceTree = "<group>"; };
+		32788CA319EE7A3C003EFD9E /* HandManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HandManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -203,7 +205,6 @@
 		3252F22D19ECD92E00DFB721 = {
 			isa = PBXGroup;
 			children = (
-				32788CA119EE5ED4003EFD9E /* CardNode.swift */,
 				3252F28F19EDCC4900DFB721 /* Resources */,
 				3252F23819ECD92E00DFB721 /* CardPlay */,
 				3252F25019ECD92E00DFB721 /* CardPlayTests */,
@@ -223,6 +224,7 @@
 		3252F23819ECD92E00DFB721 /* CardPlay */ = {
 			isa = PBXGroup;
 			children = (
+				32788CA119EE5ED4003EFD9E /* CardNode.swift */,
 				3252F23B19ECD92E00DFB721 /* AppDelegate.swift */,
 				3252F23D19ECD92E00DFB721 /* art.scnassets */,
 				3252F23F19ECD92E00DFB721 /* GameViewController.swift */,
@@ -230,6 +232,7 @@
 				3252F24419ECD92E00DFB721 /* Images.xcassets */,
 				3252F24619ECD92E00DFB721 /* LaunchScreen.xib */,
 				3252F23919ECD92E00DFB721 /* Supporting Files */,
+				32788CA319EE7A3C003EFD9E /* HandManager.swift */,
 			);
 			path = CardPlay;
 			sourceTree = "<group>";
@@ -525,6 +528,7 @@
 			files = (
 				32788CA219EE5ED4003EFD9E /* CardNode.swift in Sources */,
 				3252F24019ECD92E00DFB721 /* GameViewController.swift in Sources */,
+				32788CA419EE7A3C003EFD9E /* HandManager.swift in Sources */,
 				3252F23C19ECD92E00DFB721 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
