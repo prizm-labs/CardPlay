@@ -24,7 +24,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     let CARD_RESIZE_FACTOR = CGFloat(0.1)
     
     var handPosition:SCNVector3!
-    var handCards:[SCNNode] = []
+    var handCards:[CardNode] = []
     
     var cardAtlas:[String: String]!
     var cardManifest:[[String]] = []
@@ -47,7 +47,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     var _playerOrb:SCNNode!
     
-    var cardNodes:[SCNNode] = []
+    var cardNodes:[CardNode] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -157,7 +157,10 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         //
     }
     
-    func setupEnvironment() {
+    func setupPlayerCamera() {
+        
+        
+        
         // create and add a camera to the scene
         _cameraNode = SCNNode()
         _cameraNode.position = SCNVector3(x: 0, y: 0, z: 120)
@@ -181,12 +184,22 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         }
         
         _cameraNode.camera = camera
-//        _cameraHandleTransforms.insert(_cameraNode.transform, atIndex: 0)
-//        
+        
+        //TODO setup general transforms
+        
+        //        _cameraHandleTransforms.insert(_cameraNode.transform, atIndex: 0)
+        //
         let position = SCNVector3Make(200, 0, 1000)
         
-        _cameraNode.position = SCNVector3Make(200, -20, position.z+150)
-//        _cameraNode.eulerAngles = SCNVector3Make(CFloat(-M_PI_2)*0.06, 0, 0)
+        _cameraHandle.position = SCNVector3Make(200, position.y+100, position.z+300)
+        _cameraOrientation.rotation = SCNVector4Make(1.0, 0, 0, -CFloat(M_PI * 0.15))
+        //        _cameraNode.eulerAngles = SCNVector3Make(CFloat(-M_PI_2)*0.06, 0, 0)
+        
+    }
+    
+    func setupEnvironment() {
+
+        setupPlayerCamera()
         
         _ambientLightNode = SCNNode()
         
@@ -264,7 +277,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         cardNode.position.y += 50
         _scene.rootNode.addChildNode(cardNode)
         
-        cardNode.runAction(SCNAction.repeatActionForever(SCNAction.rotateByX(0, y: CGFloat(M_PI), z: 0, duration: 4)))
+        //cardNode.runAction(SCNAction.repeatActionForever(SCNAction.rotateByX(0, y: CGFloat(M_PI), z: 0, duration: 4)))
 
         
         // Deck of cards
@@ -298,13 +311,15 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             
             println("\(card) : \(imageFront) , \(imageBack)")
             
-            var cardNode = createCard(imageFront!, cardBackImage:imageBack!)
-            cardNode.position = SCNVector3Make(0, 0, 1000)
-            cardNode.position.y += 100
+            //var cardNode = createCard(imageFront!, cardBackImage:imageBack!)
+            
+            var cardNode = CardNode(height: CARD_HEIGHT*CARD_RESIZE_FACTOR, width: CARD_WIDTH*CARD_RESIZE_FACTOR, thickness: CARD_DEPTH*CARD_RESIZE_FACTOR, cornerRadius: CARD_RADIUS*CARD_RESIZE_FACTOR, cardFrontImage: imageFront!, cardBackImage: imageBack!)
+            cardNode.rootNode.position = SCNVector3Make(0, 0, 1000)
+            cardNode.rootNode.position.y += 100
             
             cardNodes.append(cardNode)
             
-            _scene.rootNode.addChildNode(cardNode)
+            _scene.rootNode.addChildNode(cardNode.rootNode)
         }
     }
     
@@ -319,6 +334,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         var cardContainer = SCNNode()
         
         var cardBack = SCNNode(geometry: cardBackPlane)
+        cardBack.name = "back"
         cardBack.pivot = SCNMatrix4MakeTranslation(CFloat(CARD_WIDTH*CARD_RESIZE_FACTOR)*0.5, 0, 0)
         //cardBack.pivot = SCNMatrix4MakeTranslation(CFloat(CARD_WIDTH*CARD_RESIZE_FACTOR), CFloat(CARD_HEIGHT*CARD_RESIZE_FACTOR), 0)
         
@@ -328,6 +344,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         backMaterial.diffuse.mipFilter = SCNFilterMode.Linear
         
         var cardFront = SCNNode(geometry: cardFrontPlane)
+        cardFront.name = "front"
         cardFront.pivot = SCNMatrix4MakeTranslation(CFloat(CARD_WIDTH*CARD_RESIZE_FACTOR)*0.5, 0, 0)
         
         var frontMaterial = SCNMaterial()
@@ -347,6 +364,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         
         var cardBody = SCNNode(geometry: cardVolume);
+        cardBody.name = "body"
         cardBody.pivot = SCNMatrix4MakeTranslation(CFloat(CARD_WIDTH*CARD_RESIZE_FACTOR)*0.5, 0, 0)
         //        cardNode.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Dynamic, shape: nil)
         //        cardNode.physicsBody?.restitution = 0.01
@@ -361,6 +379,23 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         return cardContainer
     }
+    
+    func updateRenderState(){
+        
+        // case: front and back only
+        // when card is floating/moving in space
+        
+        // case: front and body only
+        // when card is face-up on table
+        
+        // case: back and body only
+        // when card is face-down on table
+        // when card is partiallly overlapped in stack
+        
+        // case: body only
+        // when card is fully overlapped in stack
+        
+    }
 
     
     func drawCards(count:Int) {
@@ -374,13 +409,16 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
     }
     
-    func moveCardIntoHand(cardNode:SCNNode) {
+    func moveCardIntoHand(cardNode:CardNode) {
         
         let actionDuration = 3.0
         
         println("moveCardIntoHand: \(cardNode)")
         
+        
         handCards.append(cardNode)
+        
+        cardNode.updateRenderMode(CardNode.RenderModes.FrontAndBack)
         
         //TODO recalculate card positions, distributed across view
         
@@ -390,15 +428,15 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         println("card height \(index)")
         
         // Lay card flat
-        println("card rotation x \(cardNode.rotation.x)")
+        println("card rotation x \(cardNode.rootNode.rotation.x)")
         //cardNode.rotation.x = CFloat(M_PI / 2)
         //cardNode.rotation.x = 0.5
         
-        cardNode.runAction(SCNAction.rotateByX(-CGFloat(M_PI / 2), y: 0, z: 0, duration: actionDuration))
+        cardNode.rootNode.runAction(SCNAction.rotateByX(-CGFloat(M_PI / 2), y: 0, z: 0, duration: actionDuration))
         
         
         // Stack height by index
-        cardNode.position = handPosition
+        cardNode.rootNode.position = handPosition
         //cardNode.position.y = Float(CARD_DEPTH * CARD_RESIZE_FACTOR) * (Float(index)*2.0+0.5)
         
         
@@ -416,26 +454,30 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             
             var cardNode = cardNodes[index]
             
+            cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
+            
             SCNTransaction.begin()
             SCNTransaction.setAnimationDuration(2.0)
             
             println("card height \(index)")
             
             // Lay card flat
-            println("card rotation x \(cardNode.rotation.x)")
+            println("card rotation x \(cardNode.rootNode.rotation.x)")
             //cardNode.rotation.x = CFloat(M_PI / 2)
             //cardNode.rotation.x = 0.5
             
-            cardNode.runAction(SCNAction.rotateByX(CGFloat(M_PI / 2), y: 0, z: 0, duration: 1))
+            cardNode.rootNode.runAction(SCNAction.rotateByX(CGFloat(M_PI / 2), y: 0, z: 0, duration: 1))
 
             
             // Stack height by index
-            cardNode.position = position
-            cardNode.position.y = Float(CARD_DEPTH * CARD_RESIZE_FACTOR) * (Float(index)*2.0+0.5)
+            cardNode.rootNode.position = position
+            cardNode.rootNode.position.y = Float(CARD_DEPTH * CARD_RESIZE_FACTOR) * (Float(index)*2.0+0.5)
             
             
             SCNTransaction.commit()
         }
+        
+        // TODO the topmost card, show back
         
     }
 
