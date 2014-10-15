@@ -79,7 +79,10 @@
 			<true/>
 		</dict>
 		<key>Sprites</key>
-		<dict/>
+		<dict>
+			<key>isSmartSpriteSheet</key>
+			<true/>
+		</dict>
 		<key>ccbResources</key>
 		<dict>
 			<key>previewFolderHidden</key>
