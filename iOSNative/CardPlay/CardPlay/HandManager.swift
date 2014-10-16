@@ -14,15 +14,12 @@ import SpriteKit
 
 struct Layout {
     
-    enum Axis {
-        case x, y, z
-    }
-    
+
     func distributePositionsAlongVector(){
         
     }
     
-    func distributePositionsAcrossAxis(count:Int, origin:SCNVector3, cardWidth:Float, axis:Axis) -> [Float] {
+    func distributePositionsAlongVector(vector:SCNVector3, count:Int, origin:SCNVector3, cardWidth:Float) -> [Float] {
         println("distributePositionsAcrossAxis")
         var positions:[Float] = []
         
@@ -30,19 +27,11 @@ struct Layout {
             println("position \(index)")
         }
         
+        //
+        
         var position:SCNVector3 = origin
         var value:Float!
         
-        switch (axis) {
-            case Axis.x:
-                position.x = value
-            
-            case Axis.y:
-                position.y = value
-            
-            case Axis.z:
-                position.z = value
-        }
         
         println("adding position \(position)")
         
