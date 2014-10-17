@@ -19,16 +19,20 @@ class Table {
     
     // tabletop, circle
     var rootNode:SCNNode!
+    var tableNode:SCNNode!
+    //
     
-    var tableMaterial:SCNMaterial!
+    var players:[Player] = []
     
     init(){
+        
+        rootNode = SCNNode()
         
         var tablePath:UIBezierPath = UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: RADIUS, height: RADIUS), cornerRadius: RADIUS)
         
         var tableGeometry = SCNShape(path: tablePath, extrusionDepth: DEPTH)
 
-        
+        var tableMaterial = SCNMaterial()
         //tableMaterial.diffuse.contents =  "green-felt.jpg"
         tableMaterial.diffuse.contents = UIImage(named:"green-felt.jpg")
         tableMaterial.locksAmbientWithDiffuse = true
@@ -36,14 +40,21 @@ class Table {
         tableMaterial.diffuse.wrapT = SCNWrapMode.Repeat
         tableMaterial.diffuse.mipFilter = SCNFilterMode.Linear
         
-        
         tableGeometry.firstMaterial = tableMaterial
         
-        rootNode = SCNNode(geometry: tableGeometry)
-        rootNode.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Static, shape: nil)
-        rootNode.physicsBody?.restitution = 1.0
+        tableNode = SCNNode(geometry: tableGeometry)
+        tableNode.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Static, shape: nil)
+        tableNode.physicsBody?.restitution = 1.0
+        //tableNode.pivot = SCNMatrix4MakeTranslation(CFloat(RADIUS)*0.5, 0, 0)
+        
+        rootNode.addChildNode(tableNode)
     }
     
+    func spawnPlayer() {
+        
+        
+        
+    }
     
     
     // player count

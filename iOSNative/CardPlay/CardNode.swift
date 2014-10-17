@@ -12,6 +12,30 @@ import QuartzCore
 import SceneKit
 import SpriteKit
 
+class CardSize {
+    
+    
+    var height:CGFloat!
+    var width:CGFloat!
+    var cornerRadius:CGFloat!
+    var thickness:CGFloat!
+    
+    init(height:CGFloat, width:CGFloat, cornerRadius:CGFloat, thickness:CGFloat) {
+        self.height = height
+        self.width = width
+        self.cornerRadius = cornerRadius
+        self.thickness = thickness
+    }
+    
+    func scale(ratio:CGFloat) {
+        self.height = ratio*self.height
+        self.width = ratio*self.width
+        self.cornerRadius = ratio*self.cornerRadius
+        self.thickness = ratio*self.thickness
+    }
+}
+
+
 class CardNode {
     
     enum RenderModes {
@@ -21,6 +45,8 @@ class CardNode {
         case BodyOnly
     }
     
+    var size:CardSize!
+    
     var rootNode = SCNNode()
     var currentRenderMode = RenderModes.FrontAndBack
     
@@ -29,17 +55,19 @@ class CardNode {
     var _cardBody:SCNNode!
     
     
-    init(height:CGFloat, width:CGFloat, thickness:CGFloat, cornerRadius:CGFloat, cardFrontImage:String, cardBackImage:String){
+    init(size:CardSize, cardFrontImage:String, cardBackImage:String){
     
-        var cardPath:UIBezierPath = UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: width, height: height), cornerRadius: cornerRadius)
+        self.size = size
+        
+        var cardPath:UIBezierPath = UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: size.width, height: size.height), cornerRadius: size.cornerRadius)
     
-        var cardVolume = SCNShape(path: cardPath, extrusionDepth: thickness)
+        var cardVolume = SCNShape(path: cardPath, extrusionDepth: size.thickness)
         var cardFrontPlane = SCNShape(path: cardPath, extrusionDepth: 0)
         var cardBackPlane = SCNShape(path: cardPath, extrusionDepth: 0)
         
         _cardBack = SCNNode(geometry: cardBackPlane)
         _cardBack.name = "back"
-        _cardBack.pivot = SCNMatrix4MakeTranslation(CFloat(width)*0.5, 0, 0)
+        _cardBack.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, 0, 0)
         //cardBack.pivot = SCNMatrix4MakeTranslation(CFloat(CARD_WIDTH*CARD_RESIZE_FACTOR), CFloat(CARD_HEIGHT*CARD_RESIZE_FACTOR), 0)
         
         var backMaterial = SCNMaterial()
@@ -49,14 +77,14 @@ class CardNode {
         
         _cardFront = SCNNode(geometry: cardFrontPlane)
         _cardFront.name = "front"
-        _cardFront.pivot = SCNMatrix4MakeTranslation(CFloat(width)*0.5, 0, 0)
+        _cardFront.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, 0, 0)
         
         var frontMaterial = SCNMaterial()
         frontMaterial.diffuse.contents =  cardFrontImage
         frontMaterial.locksAmbientWithDiffuse = true
         frontMaterial.diffuse.mipFilter = SCNFilterMode.Linear
         
-        var cardPlaneOffset = CFloat(thickness) / 2.0 + 0.01
+        var cardPlaneOffset = CFloat(size.thickness) / 2.0 + 0.01
         
         _cardFront.geometry?.firstMaterial = frontMaterial
         _cardFront.position = SCNVector3Make(0, 0, cardPlaneOffset)
@@ -64,12 +92,12 @@ class CardNode {
         _cardBack.geometry?.firstMaterial = backMaterial
         _cardBack.position = SCNVector3Make(0, 0, -cardPlaneOffset)
         _cardBack.eulerAngles = SCNVector3Make(0, CFloat(M_PI), 0)
-        _cardBack.rotation = SCNVector4Make(0, 1.0, 0, CFloat(M_PI))
+        //_cardBack.rotation = SCNVector4Make(0, 1.0, 0, CFloat(M_PI))
         
         
         _cardBody = SCNNode(geometry: cardVolume);
         _cardBody.name = "body"
-        _cardBody.pivot = SCNMatrix4MakeTranslation(CFloat(width)*0.5, 0, 0)
+        _cardBody.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, 0, 0)
         //        cardNode.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Dynamic, shape: nil)
         //        cardNode.physicsBody?.restitution = 0.01
         //        cardNode.physicsBody?.mass = 5

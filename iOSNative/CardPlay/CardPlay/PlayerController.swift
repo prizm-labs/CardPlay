@@ -9,7 +9,7 @@
 import Foundation
 import SceneKit
 
-class PlayerController {
+class Player {
     
     var rootNode = SCNNode()
     var positionIndicator:SCNNode!

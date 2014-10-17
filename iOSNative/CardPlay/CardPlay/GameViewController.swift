@@ -222,9 +222,9 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         //        _cameraHandleTransforms.insert(_cameraNode.transform, atIndex: 0)
         //
-        let position = SCNVector3Make(200, 0, 1000)
+        let position = SCNVector3Make(0, 0, 0)
         
-        _cameraHandle.position = SCNVector3Make(200, position.y+100, position.z+300)
+        _cameraHandle.position = SCNVector3Make(0, position.y+100, position.z+300)
         _cameraOrientation.rotation = SCNVector4Make(1.0, 0, 0, -CFloat(M_PI * 0.15))
         //        _cameraNode.eulerAngles = SCNVector3Make(CFloat(-M_PI_2)*0.06, 0, 0)
         
@@ -285,6 +285,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         _floorNode.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Static, shape: nil)
         _floorNode.physicsBody?.restitution = 1.0
         
+        _floorNode.position.y -= 200.0
+        
         _scene.rootNode.addChildNode(_floorNode)
         
         var table = Table()
@@ -302,14 +304,14 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         _playerOrb.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Dynamic, shape: nil)
         _playerOrb.physicsBody?.restitution = 0.9
         
-        _playerOrb.position = SCNVector3Make(200, 0, 1000)
+        _playerOrb.position = SCNVector3Make(0, 0, 0)
         _playerOrb.position.y += CFloat(ORB_RADIUS * 8)
         
         _scene.rootNode.addChildNode(_playerOrb)
         
         
         var cardNode = createCard("ace_of_spades.png", cardBackImage:"back-default.png")
-        cardNode.position = SCNVector3Make(200, 0, 1000)
+        cardNode.position = SCNVector3Make(0, 0, 0)
         cardNode.position.y += 50
         _scene.rootNode.addChildNode(cardNode)
         
@@ -317,12 +319,23 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
 
         
         // Deck of cards
-        generateDeck(cardAtlas,manifest:cardManifest)
-
-        gatherCardsIntoDeck(SCNVector3Make(200, 0, 1000))
+//        generateDeck(cardAtlas,manifest:cardManifest)
+//
+//        gatherCardsIntoDeck(SCNVector3Make(0, 0, 0))
         
-        handPosition = SCNVector3Make(250, CFloat(CARD_HEIGHT*CARD_RESIZE_FACTOR * 0.5), 1150)
-        moveCardIntoHand(cardNodes[0])
+        var size = CardSize(height: CARD_HEIGHT, width: CARD_WIDTH, cornerRadius: CARD_RADIUS, thickness: CARD_DEPTH)
+        size.scale(CARD_RESIZE_FACTOR)
+
+        var deck = Deck(atlas:cardAtlas,manifest:cardManifest,size:size,origin:SCNVector3Make(0, 0, 0))
+        
+        deck.spawn(_scene.rootNode)
+        
+        deck.gatherCards(SCNVector3Make(0, 0, 0))
+        
+        var handGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Fan, orientation: SCNVector3Make(0, 0, 0))
+        
+//        handPosition = SCNVector3Make(250, CFloat(CARD_HEIGHT*CARD_RESIZE_FACTOR * 0.5), 300)
+//        moveCardIntoHand(cardNodes[0])
         
         //        // create and add a light to the scene
         //        let lightNode = SCNNode()
@@ -339,28 +352,28 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         //        scene.rootNode.addChildNode(ambientLightNode)
     }
     
-    func generateDeck(atlas:[String:String],manifest:[[String]]) {
-        for card in manifest {
-            
-            let imageFront = atlas[card[1]]
-            let imageBack = atlas[card[0]]
-            
-            println("\(card) : \(imageFront) , \(imageBack)")
-            
-            //var cardNode = createCard(imageFront!, cardBackImage:imageBack!)
-            
-            var cardNode = CardNode(height: CARD_HEIGHT*CARD_RESIZE_FACTOR, width: CARD_WIDTH*CARD_RESIZE_FACTOR, thickness: CARD_DEPTH*CARD_RESIZE_FACTOR, cornerRadius: CARD_RADIUS*CARD_RESIZE_FACTOR, cardFrontImage: imageFront!, cardBackImage: imageBack!)
-            cardNode.rootNode.position = SCNVector3Make(0, 0, 1000)
-            cardNode.rootNode.position.y += 100
-            
-            cardNodes.append(cardNode)
-            
-            //deckCards.append(cardNode)
-            deckCards.addObject(cardNode)
-            
-            _scene.rootNode.addChildNode(cardNode.rootNode)
-        }
-    }
+//    func generateDeck(atlas:[String:String],manifest:[[String]]) {
+//        for card in manifest {
+//            
+//            let imageFront = atlas[card[1]]
+//            let imageBack = atlas[card[0]]
+//            
+//            println("\(card) : \(imageFront) , \(imageBack)")
+//            
+//            //var cardNode = createCard(imageFront!, cardBackImage:imageBack!)
+//            
+//            var cardNode = CardNode(height: CARD_HEIGHT*CARD_RESIZE_FACTOR, width: CARD_WIDTH*CARD_RESIZE_FACTOR, thickness: CARD_DEPTH*CARD_RESIZE_FACTOR, cornerRadius: CARD_RADIUS*CARD_RESIZE_FACTOR, cardFrontImage: imageFront!, cardBackImage: imageBack!)
+//            cardNode.rootNode.position = SCNVector3Make(0, 0, 1000)
+//            cardNode.rootNode.position.y += 100
+//            
+//            cardNodes.append(cardNode)
+//            
+//            //deckCards.append(cardNode)
+//            deckCards.addObject(cardNode)
+//            
+//            _scene.rootNode.addChildNode(cardNode.rootNode)
+//        }
+//    }
     
     func createCard (cardFrontImage:String, cardBackImage:String) -> SCNNode {
         
@@ -479,42 +492,42 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
     }
     
-    func gatherCardsIntoDeck(position:SCNVector3) {
-        
-        var index:Int
-        
-        //for index = 0; index < cardNodes.count; ++index {
-        
-        for (index, cardNode) in enumerate(cardNodes) {
-            
-            var cardNode = cardNodes[index]
-            
-            cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
-            
-            SCNTransaction.begin()
-            SCNTransaction.setAnimationDuration(2.0)
-            
-            println("card height \(index)")
-            
-            // Lay card flat
-            println("card rotation x \(cardNode.rootNode.rotation.x)")
-            //cardNode.rotation.x = CFloat(M_PI / 2)
-            //cardNode.rotation.x = 0.5
-            
-            cardNode.rootNode.runAction(SCNAction.rotateByX(CGFloat(M_PI / 2), y: 0, z: 0, duration: 1))
-
-            
-            // Stack height by index
-            cardNode.rootNode.position = position
-            cardNode.rootNode.position.y = Float(CARD_DEPTH * CARD_RESIZE_FACTOR) * (Float(index)*2.0+0.5)
-            
-            
-            SCNTransaction.commit()
-        }
-        
-        // TODO the topmost card, show back
-        
-    }
+//    func gatherCardsIntoDeck(position:SCNVector3) {
+//        
+//        var index:Int
+//        
+//        //for index = 0; index < cardNodes.count; ++index {
+//        
+//        for (index, cardNode) in enumerate(cardNodes) {
+//            
+//            var cardNode = cardNodes[index]
+//            
+//            cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
+//            
+//            SCNTransaction.begin()
+//            SCNTransaction.setAnimationDuration(2.0)
+//            
+//            println("card height \(index)")
+//            
+//            // Lay card flat
+//            println("card rotation x \(cardNode.rootNode.rotation.x)")
+//            //cardNode.rotation.x = CFloat(M_PI / 2)
+//            //cardNode.rotation.x = 0.5
+//            
+//            cardNode.rootNode.runAction(SCNAction.rotateByX(CGFloat(M_PI / 2), y: 0, z: 0, duration: 1))
+//
+//            
+//            // Stack height by index
+//            cardNode.rootNode.position = position
+//            cardNode.rootNode.position.y = Float(CARD_DEPTH * CARD_RESIZE_FACTOR) * (Float(index)*2.0+0.5)
+//            
+//            
+//            SCNTransaction.commit()
+//        }
+//        
+//        // TODO the topmost card, show back
+//        
+//    }
 
     
     func handleTap(gestureRecognize: UIGestureRecognizer) {
