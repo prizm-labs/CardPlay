@@ -11,6 +11,8 @@ import QuartzCore
 import SceneKit
 import SpriteKit
 
+import CoreMotion
+
 import Foundation
 
 class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysicsContactDelegate {
@@ -56,6 +58,33 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
+    }
+    
+    func setupAccelerometer() {
+        
+        let motionManager: CMMotionManager = CMMotionManager()
+        if (motionManager.accelerometerAvailable) {
+            motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue()) {
+                (data, error) in
+//                let currentX = monkey.position.x
+//                let currentY = monkey.position.y
+//                if(data.acceleration.y < -0.25) { // tilting the device to the right
+//                    var destX = (CGFloat(data.acceleration.y) * CGFloat(kPlayerSpeed) + CGFloat(currentX))
+//                    var destY = CGFloat(currentY)
+//                    motionManager.accelerometerActive == true;
+//                    let action = SKAction.moveTo(CGPointMake(destX, destY), duration: 1)
+//                    monkey.runAction(action)
+//                } else if (data.acceleration.y > 0.25) { // tilting the device to the left
+//                    var destX = (CGFloat(data.acceleration.y) * CGFloat(kPlayerSpeed) + CGFloat(currentX))
+//                    var destY = CGFloat(currentY)
+//                    motionManager.accelerometerActive == true;
+//                    let action = SKAction.moveTo(CGPointMake(destX, destY), duration: 1)
+//                    monkey.runAction(action)
+//                }
+            }
+            
+        }
+        
     }
     
     func setup() {
@@ -257,6 +286,9 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         _floorNode.physicsBody?.restitution = 1.0
         
         _scene.rootNode.addChildNode(_floorNode)
+        
+        var table = Table()
+        _scene.rootNode.addChildNode(table.rootNode)
     }
     
     func setupSceneElements() {
