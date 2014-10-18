@@ -8,6 +8,12 @@
 
 import Foundation
 
-class ConnectionManager {
+class MultipeerManager {
+    
+    func parseUpdate() {
+        
+    }
+    
+    
     
 }

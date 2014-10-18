@@ -45,6 +45,7 @@ class Table {
         tableNode = SCNNode(geometry: tableGeometry)
         tableNode.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Static, shape: nil)
         tableNode.physicsBody?.restitution = 1.0
+        tableNode.eulerAngles = SCNVector3Make(CFloat(M_PI), 0, 0)
         //tableNode.pivot = SCNMatrix4MakeTranslation(CFloat(RADIUS)*0.5, 0, 0)
         
         rootNode.addChildNode(tableNode)

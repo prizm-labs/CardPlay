@@ -23,13 +23,15 @@ class CardGroup {
     var cards:[CardNode] = []
     var organizationMode:OrganizationMode!
     var orientation:SCNVector3!
+    var origin:SCNVector3!
     
     // origin
     
-    init(organizationMode:OrganizationMode, orientation:SCNVector3){
+    init(organizationMode:OrganizationMode, orientation:SCNVector3, origin:SCNVector3){
         
         self.organizationMode = organizationMode
         self.orientation = orientation
+        self.origin = origin // within scene.rootNode
         
     }
     

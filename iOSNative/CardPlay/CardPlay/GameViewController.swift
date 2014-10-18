@@ -332,7 +332,15 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         deck.gatherCards(SCNVector3Make(0, 0, 0))
         
-        var handGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Fan, orientation: SCNVector3Make(0, 0, 0))
+        // Add deck to table group
+        var tableSurfaceGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(0, 0, 0), origin:SCNVector3Make(0, 0, 0))
+        
+        // hover group
+        
+        
+        // hand group
+        
+        var handGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Fan, orientation: SCNVector3Make(0, 0, 0), origin:SCNVector3Make(0, 0, 0))
         
 //        handPosition = SCNVector3Make(250, CFloat(CARD_HEIGHT*CARD_RESIZE_FACTOR * 0.5), 300)
 //        moveCardIntoHand(cardNodes[0])
