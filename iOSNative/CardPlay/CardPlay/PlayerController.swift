@@ -14,14 +14,37 @@ class Player {
     var rootNode = SCNNode()
     var positionIndicator:SCNNode!
     
+    var origin:SCNVector3!
+    
+    var handGroup:CardGroup!
+    var fieldGroup:CardGroup!
+    
     let INDICATOR_SIZE:CGFloat = 20.0
     
-    init(){
+    init(origin:SCNVector3){
+        
+        self.origin = origin
         
         // indicator is a floating sphere
         positionIndicator = SCNNode(geometry: SCNSphere(radius: INDICATOR_SIZE))
         
         rootNode.addChildNode(positionIndicator)
+        rootNode.position = self.origin
+        
+        // card groups
+        handGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Fan, orientation: SCNVector3Make(0, 0, 0), origin:self.origin)
+        
+        fieldGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:self.origin)
+        
+    }
+    
+    func drawCardFromGroup(card:CardNode, group:CardGroup) {
+        
+        group.removeCard(card)
+        group.organize(group.organizationMode, vector: SCNVector3Zero, duration: 1.0)
+        
+        handGroup.addCard(card)
+        handGroup.organize(handGroup.organizationMode, vector: SCNVector3Zero, duration: 2.0)
     }
     
     

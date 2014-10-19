@@ -7,8 +7,68 @@
 //
 
 import Foundation
+import SceneKit
+import UIKit
 
-class CameraController {
+class Camera {
+    
+    var cameraNode:SCNNode!
+    var positionHandle:SCNNode!
+    var orientationHandle:SCNNode!
+    
+    var orientation:SCNVector3!
+    var position:SCNVector3!
+    
+    init(){
+    
+        // create and add a camera to the scene
+        cameraNode = SCNNode()
+        cameraNode.position = SCNVector3(x: 0, y: 0, z: 0)
+        
+        positionHandle = SCNNode()
+        positionHandle.position = SCNVector3(x: 0, y: 0, z: 0)
+        
+        orientationHandle = SCNNode()
+        
+        positionHandle.addChildNode(orientationHandle)
+        orientationHandle.addChildNode(cameraNode)
+        
+        var camera = SCNCamera()
+        camera.zFar = 2000
+        
+        if UIDevice.currentDevice().userInterfaceIdiom == UIUserInterfaceIdiom.Phone {
+            camera.yFov = 55
+        } else {
+            camera.xFov = 75
+        }
+        
+        cameraNode.camera = camera
+        
+        //TODO setup general transforms
+        
+        //        _cameraHandleTransforms.insert(_cameraNode.transform, atIndex: 0)
+        //
+    }
+    
+    func transform(position:SCNVector3, orientation:SCNVector3) {
+        
+        self.position = position
+        self.orientation = orientation
+        
+        
+        positionHandle.position = self.position
+        orientationHandle.eulerAngles = self.orientation
+    }
+    
+    func lookAtNode(target:SCNNode) {
+        
+        //cameraNode.camera
+    }
+    
+    func registerPresetTransform(){
+        
+    }
+    
     
     // attach to player
     

@@ -17,11 +17,14 @@ class CardGroup {
     }
     
     enum OrganizationMode {
-        case Open, Stack, Fan
+        case Open
+        case Stack
+        case Fan
+        case Vector
     }
     
-    var cards:[CardNode] = []
-    var organizationMode:OrganizationMode!
+    var cards:NSMutableArray = []
+    var organizationMode:OrganizationMode
     var orientation:SCNVector3!
     var origin:SCNVector3!
     
@@ -36,14 +39,29 @@ class CardGroup {
     }
     
     func addCard(card:CardNode){
-        
+        println("addCard")
+        if !cards.containsObject(card) {
+            cards.addObject(card)
+        }
+        println("card group \(self.cards.count)")
     }
     
-    func addCards(cards:[CardNode]) {
-        
+    func addCards(cards:NSMutableArray) {
+        println("addCards")
+        for card in cards {
+            if !self.cards.containsObject(card) {
+                self.cards.addObject(card)
+            }
+        }
+        println("card group \(self.cards.count)")
     }
     
     func removeCard(card:CardNode){
+        println("removeCard")
+        
+        if self.cards.containsObject(card) {
+            self.cards.removeObject(card)
+        }
         
     }
     
@@ -60,8 +78,76 @@ class CardGroup {
         
     }
     
-    func organize(mode:OrganizationMode) {
+    func organize(mode:OrganizationMode, vector:SCNVector3, duration:CFloat) {
+
+        organizationMode = mode
         
+        switch organizationMode {
+            
+        case .Open:
+            println("Open")
+            
+            
+        case .Stack:
+            println("Stack")
+            for (index, cardNode) in enumerate(cards) {
+                
+                var cardNode:CardNode = cards[index] as CardNode
+                
+                cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
+                
+                if duration>0 {
+                    SCNTransaction.begin()
+                    SCNTransaction.setAnimationDuration(2.0)
+                }
+                
+            
+                cardNode.rootNode.eulerAngles = self.orientation
+                
+                // TODO stack along vector
+                
+                // Stack height by index
+                cardNode.rootNode.position = self.origin
+                cardNode.rootNode.position.y = Float(cardNode.size.thickness) * (Float(index)*2.0+0.5)
+                
+                if duration>0 {
+                    SCNTransaction.commit()
+                }
+            }
+            
+            
+        case .Fan:
+            println("Fan")
+            for (index, cardNode) in enumerate(cards) {
+                
+                var cardNode:CardNode = cards[index] as CardNode
+                
+                cardNode.updateRenderMode(CardNode.RenderModes.FrontAndBack)
+                
+                if duration>0 {
+                    SCNTransaction.begin()
+                    SCNTransaction.setAnimationDuration(2.0)
+                }
+                
+                
+                cardNode.rootNode.eulerAngles = self.orientation
+                
+                // TODO stack along vector
+                
+                // Stack height by index
+                cardNode.rootNode.position = self.origin
+                //cardNode.rootNode.position.y = Float(cardNode.size.thickness) * (Float(index)*2.0+0.5)
+                
+                if duration>0 {
+                    SCNTransaction.commit()
+                }
+            }
+            
+            
+        case .Vector:
+            println("Vector")
+            
+        }
         
         
     }

@@ -12,10 +12,12 @@ import SceneKit
 
 class Deck {
     
-    var cardNodes:[CardNode] = []
-    var rootNode:SCNNode!
+    var cards:NSMutableArray = []
+    //var rootNode:SCNNode!
     var size:CardSize!
     var origin:SCNVector3!
+    
+    var group:CardGroup!
     
     init(atlas:[String:String], manifest:[[String]], size:CardSize, origin:SCNVector3) {
         for card in manifest {
@@ -26,7 +28,7 @@ class Deck {
             let imageFront = atlas[card[1]]
             let imageBack = atlas[card[0]]
             
-            rootNode = SCNNode()
+            //rootNode = SCNNode()
             
             println("\(card) : \(imageFront) , \(imageBack)")
             
@@ -34,9 +36,8 @@ class Deck {
             
             var cardNode = CardNode(size:size, cardFrontImage: imageFront!, cardBackImage: imageBack!)
             cardNode.rootNode.position = self.origin
-            cardNode.rootNode.position.y += 100
             
-            cardNodes.append(cardNode)
+            cards.addObject(cardNode)
             
             //deckCards.append(cardNode)
             //deckCards.addObject(cardNode)
@@ -45,12 +46,23 @@ class Deck {
         }
     }
     
+    func setGroup(group:CardGroup) {
+        
+        self.group = group
+        
+        group.addCards(cards)
+        group.organize(group.organizationMode, vector: SCNVector3Zero, duration:0)
+    }
+    
     func spawn(rootNode:SCNNode) {
         // TODO animate cards entering gme world
         // fade in?
         
-        for card in cardNodes {
-            rootNode.addChildNode(card.rootNode)
+        println("spawn, \(cards.count) cards")
+        
+        for (index, cardNode) in enumerate(cards) {
+            var cardNode:CardNode = cards[index] as CardNode
+            rootNode.addChildNode(cardNode.rootNode)
         }
     }
     
@@ -60,11 +72,11 @@ class Deck {
         
         var index:Int
         
-        //for index = 0; index < cardNodes.count; ++index {
+        //for index = 0; index < cards.count; ++index {
         
-        for (index, cardNode) in enumerate(cardNodes) {
+        for (index, cardNode) in enumerate(cards) {
             
-            var cardNode = cardNodes[index]
+            var cardNode:CardNode = cards[index] as CardNode
             
             cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
             

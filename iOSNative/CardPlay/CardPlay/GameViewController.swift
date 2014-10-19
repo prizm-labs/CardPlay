@@ -17,6 +17,7 @@ import Foundation
 
 class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysicsContactDelegate {
     
+    
     let ORB_RADIUS = CGFloat(15)
     let CARD_WIDTH = CGFloat(500)
     let CARD_HEIGHT = CGFloat(726)
@@ -25,11 +26,11 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     let CARD_RESIZE_FACTOR = CGFloat(0.1)
     
-    var handPosition:SCNVector3!
-    //var handCards:[CardNode] = []
-     var handCards:NSMutableArray = []
+    let TABLE_RADIUS = CGFloat(600.0)
+    let TABLE_DEPTH = CGFloat(50.0)
     
-    //var deckCards:[CardNode] = []
+    var handPosition:SCNVector3!
+    var handCards:NSMutableArray = []
     var deckCards:NSMutableArray = []
     
     var cardAtlas:[String: String]!
@@ -54,6 +55,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     var _playerOrb:SCNNode!
     
     var cardNodes:[CardNode] = []
+    
+    var players:NSMutableArray = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -91,7 +94,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         // retrieve the SCNView
         let sceneView = view as SCNView
-        sceneView.backgroundColor = SKColor.blackColor()
+        
+        sceneView.backgroundColor = SKColor.whiteColor()
     
         
         // Get cards manifest
@@ -193,41 +197,13 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     func setupPlayerCamera() {
         
         
+        var camera = Camera()
         
-        // create and add a camera to the scene
-        _cameraNode = SCNNode()
-        _cameraNode.position = SCNVector3(x: 0, y: 0, z: 120)
+        _scene.rootNode.addChildNode(camera.positionHandle)
+        _cameraNode = camera.cameraNode
         
-        _cameraHandle = SCNNode()
-        _cameraHandle.position = SCNVector3(x: 0, y: 60, z: 120)
-        
-        _cameraOrientation = SCNNode()
-        
-        _scene.rootNode.addChildNode(_cameraHandle)
-        _cameraHandle.addChildNode(_cameraOrientation)
-        _cameraOrientation.addChildNode(_cameraNode)
-        
-        var camera = SCNCamera()
-        camera.zFar = 800
-        
-        if UIDevice.currentDevice().userInterfaceIdiom == UIUserInterfaceIdiom.Phone {
-            camera.yFov = 55
-        } else {
-            camera.xFov = 75
-        }
-        
-        _cameraNode.camera = camera
-        
-        //TODO setup general transforms
-        
-        //        _cameraHandleTransforms.insert(_cameraNode.transform, atIndex: 0)
-        //
-        let position = SCNVector3Make(0, 0, 0)
-        
-        _cameraHandle.position = SCNVector3Make(0, position.y+100, position.z+300)
-        _cameraOrientation.rotation = SCNVector4Make(1.0, 0, 0, -CFloat(M_PI * 0.15))
-        //        _cameraNode.eulerAngles = SCNVector3Make(CFloat(-M_PI_2)*0.06, 0, 0)
-        
+        // position default behind player
+        camera.transform(SCNVector3Make(0,150,Float(TABLE_RADIUS*0.75)), orientation: SCNVector3Make(-CFloat(M_PI * 0.15), 0, 0))
     }
     
     func setupEnvironment() {
@@ -238,7 +214,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         var ambientLight = SCNLight()
         ambientLight.type = SCNLightTypeAmbient
-        ambientLight.color = SKColor(white: 0.5, alpha: 0.8)
+        ambientLight.color = SKColor(white: 0.8, alpha: 0.8)
         _ambientLightNode.light = ambientLight
         
         _scene.rootNode.addChildNode(_ambientLightNode)
@@ -289,7 +265,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         _scene.rootNode.addChildNode(_floorNode)
         
-        var table = Table()
+        var table = Table(radius: 600.0, depth: 50.0)
+        
         _scene.rootNode.addChildNode(table.rootNode)
     }
     
@@ -319,69 +296,31 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
 
         
         // Deck of cards
-//        generateDeck(cardAtlas,manifest:cardManifest)
-//
-//        gatherCardsIntoDeck(SCNVector3Make(0, 0, 0))
-        
         var size = CardSize(height: CARD_HEIGHT, width: CARD_WIDTH, cornerRadius: CARD_RADIUS, thickness: CARD_DEPTH)
         size.scale(CARD_RESIZE_FACTOR)
 
         var deck = Deck(atlas:cardAtlas,manifest:cardManifest,size:size,origin:SCNVector3Make(0, 0, 0))
+        // Deck default group as stack
+        var deckStackGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Stack, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 0, 0))
         
+        deck.setGroup(deckStackGroup)
         deck.spawn(_scene.rootNode)
+
         
-        deck.gatherCards(SCNVector3Make(0, 0, 0))
+        // Players
+        var player = Player(origin: SCNVector3Make(0, 50, Float(TABLE_RADIUS*0.5)))
         
-        // Add deck to table group
-        var tableSurfaceGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(0, 0, 0), origin:SCNVector3Make(0, 0, 0))
+        // Draw card
+        player.drawCardFromGroup(deck.cards[0] as CardNode, group: deck.group)
+        
+        // general table surface
+        var tableSurfaceGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 0, 0))
         
         // hover group
+        var tableHoverGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 150.0, 0))
         
         
-        // hand group
-        
-        var handGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Fan, orientation: SCNVector3Make(0, 0, 0), origin:SCNVector3Make(0, 0, 0))
-        
-//        handPosition = SCNVector3Make(250, CFloat(CARD_HEIGHT*CARD_RESIZE_FACTOR * 0.5), 300)
-//        moveCardIntoHand(cardNodes[0])
-        
-        //        // create and add a light to the scene
-        //        let lightNode = SCNNode()
-        //        lightNode.light = SCNLight()
-        //        lightNode.light!.type = SCNLightTypeOmni
-        //        lightNode.position = SCNVector3(x: 0, y: 10, z: 10)
-        //        scene.rootNode.addChildNode(lightNode)
-        //
-        //        // create and add an ambient light to the scene
-        //        let ambientLightNode = SCNNode()
-        //        ambientLightNode.light = SCNLight()
-        //        ambientLightNode.light!.type = SCNLightTypeAmbient
-        //        ambientLightNode.light!.color = UIColor.darkGrayColor()
-        //        scene.rootNode.addChildNode(ambientLightNode)
     }
-    
-//    func generateDeck(atlas:[String:String],manifest:[[String]]) {
-//        for card in manifest {
-//            
-//            let imageFront = atlas[card[1]]
-//            let imageBack = atlas[card[0]]
-//            
-//            println("\(card) : \(imageFront) , \(imageBack)")
-//            
-//            //var cardNode = createCard(imageFront!, cardBackImage:imageBack!)
-//            
-//            var cardNode = CardNode(height: CARD_HEIGHT*CARD_RESIZE_FACTOR, width: CARD_WIDTH*CARD_RESIZE_FACTOR, thickness: CARD_DEPTH*CARD_RESIZE_FACTOR, cornerRadius: CARD_RADIUS*CARD_RESIZE_FACTOR, cardFrontImage: imageFront!, cardBackImage: imageBack!)
-//            cardNode.rootNode.position = SCNVector3Make(0, 0, 1000)
-//            cardNode.rootNode.position.y += 100
-//            
-//            cardNodes.append(cardNode)
-//            
-//            //deckCards.append(cardNode)
-//            deckCards.addObject(cardNode)
-//            
-//            _scene.rootNode.addChildNode(cardNode.rootNode)
-//        }
-//    }
     
     func createCard (cardFrontImage:String, cardBackImage:String) -> SCNNode {
         
