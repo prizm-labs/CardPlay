@@ -68,7 +68,7 @@ class CardNode {
         var cardBackPlane = SCNShape(path: cardPath, extrusionDepth: 0)
         
         _cardBack = SCNNode(geometry: cardBackPlane)
-        _cardBack.name = "back"
+        _cardBack.name = "cardBack"
         _cardBack.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, 0, 0)
         //cardBack.pivot = SCNMatrix4MakeTranslation(CFloat(CARD_WIDTH*CARD_RESIZE_FACTOR), CFloat(CARD_HEIGHT*CARD_RESIZE_FACTOR), 0)
         
@@ -78,7 +78,7 @@ class CardNode {
         backMaterial.diffuse.mipFilter = SCNFilterMode.Linear
         
         _cardFront = SCNNode(geometry: cardFrontPlane)
-        _cardFront.name = "front"
+        _cardFront.name = "cardFront"
         _cardFront.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, 0, 0)
         
         var frontMaterial = SCNMaterial()
@@ -98,7 +98,7 @@ class CardNode {
         
         
         _cardBody = SCNNode(geometry: cardVolume);
-        _cardBody.name = "body"
+        _cardBody.name = "cardBody"
         _cardBody.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, 0, 0)
         //        cardNode.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Dynamic, shape: nil)
         //        cardNode.physicsBody?.restitution = 0.01
@@ -114,6 +114,19 @@ class CardNode {
     }
     
     func updateRenderMode(mode:RenderModes){
+        
+        // case: front and back only
+        // when card is floating/moving in space
+        
+        // case: front and body only
+        // when card is face-up on table
+        
+        // case: back and body only
+        // when card is face-down on table
+        // when card is partiallly overlapped in stack
+        
+        // case: body only
+        // when card is fully overlapped in stack
         
         println("updateRenderMode")
         

@@ -58,6 +58,11 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     var players:NSMutableArray = []
     
+    
+    var activeObject:SCNNode?
+    var activeObjectOrigin:SCNVector3?
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
@@ -97,6 +102,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         sceneView.backgroundColor = SKColor.whiteColor()
     
+        // cache for binding objects to gestures
+        activeObject = nil
         
         // Get cards manifest
 
@@ -143,15 +150,19 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         sceneView.showsStatistics = true
         
         // add a tap gesture recognizer
-//        let tapGesture = UITapGestureRecognizer(target: self, action: "handleTap:")
-//        //let tapGesture = UITapGestureRecognizer(target: self, action: "moveCamera")
-//        let gestureRecognizers = NSMutableArray()
-//        gestureRecognizers.addObject(tapGesture)
-//        
-//        if let existingGestureRecognizers = sceneView.gestureRecognizers {
-//            gestureRecognizers.addObjectsFromArray(existingGestureRecognizers)
-//        }
-//        sceneView.gestureRecognizers = gestureRecognizers
+        let tapGesture = UITapGestureRecognizer(target: self, action: "handleTap:")
+        //let tapGesture = UITapGestureRecognizer(target: self, action: "moveCamera")
+        
+        let panGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
+        
+        let gestureRecognizers = NSMutableArray()
+        gestureRecognizers.addObject(tapGesture)
+        gestureRecognizers.addObject(panGesture)
+        
+        if let existingGestureRecognizers = sceneView.gestureRecognizers {
+            gestureRecognizers.addObjectsFromArray(existingGestureRecognizers)
+        }
+        sceneView.gestureRecognizers = gestureRecognizers
 
         
 //        var overlay = SpriteKitOverlayScene
@@ -379,103 +390,119 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         return cardContainer
     }
     
-    func updateRenderState(){
+    func bindObjectToPan(object:SCNNode, recognizer:UIGestureRecognizer) {
         
-        // case: front and back only
-        // when card is floating/moving in space
         
-        // case: front and body only
-        // when card is face-up on table
-        
-        // case: back and body only
-        // when card is face-down on table
-        // when card is partiallly overlapped in stack
-        
-        // case: body only
-        // when card is fully overlapped in stack
         
     }
-
     
-    func drawCards(count:Int) {
+    func handlePan(recognizer:UIPanGestureRecognizer) {
+        //comment for panning
+        //uncomment for tickling
+        //return;
         
-        for index in 0...count {
+        let translation:CGPoint = recognizer.translationInView(self.view)
+        
+        println("handlePan \(translation)")
+        
+        // Check if touchDownInside card
+        
+        let sceneView = self.view as SCNView
+        // check what nodes are tapped
+        let p = recognizer.locationInView(sceneView)
+        
+        var object:SCNNode? = getObjectFromHitTest(p)
+        
+        if object !== nil {
+            println("pan inside object")
             
-            moveCardIntoHand(cardNodes[index])
-            
-            //TODO stagger each card drawn
+            if activeObject == nil {
+                
+                // if card, bind to root node
+                if object?.name == "cardFront" || object?.name == "cardBack" {
+                    
+                    // cache object
+                    activeObject = object?.parentNode
+                    activeObjectOrigin = object?.parentNode?.position
+                    //activeObjectOrigin = SCNVector3Make(CFloat(object?.position.x), CFloat(object?.position.y), CFloat(object?.position.z))
+                    
+                }
+                
+                
+                
+            }
         }
         
-    }
-    
-    func moveCardIntoHand(cardNode:CardNode) {
-        
-        let actionDuration = 3.0
-        
-        println("moveCardIntoHand: \(cardNode)")
-        
-        deckCards.removeObject(cardNode)
-        handCards.addObject(cardNode)
-        
-        cardNode.updateRenderMode(CardNode.RenderModes.FrontAndBack)
-        
-        //TODO recalculate card positions, distributed across view
-        
-        SCNTransaction.begin()
-        SCNTransaction.setAnimationDuration(actionDuration)
-        
-        // Card upright
-        println("card rotation x \(cardNode.rootNode.rotation.x)")
+        if activeObject != nil {
+            // manipulate object
+            
+            let x = activeObjectOrigin?.x
+            let y = activeObjectOrigin?.y
+            let z = activeObjectOrigin?.z
+            
+            activeObject?.position = SCNVector3Make(x! + CFloat(translation.x), y! - CFloat(translation.y), z!)
+            
+            //                activeObject.position?.x = activeObjectOrigin.x? + CFloat(translation.x)
+            //                activeObject?.position.y = CFloat(activeObjectOrigin?.y+translation.y)
+            
+        }
 
-        cardNode.rootNode.runAction(SCNAction.rotateByX(-CGFloat(M_PI / 2), y: 0, z: 0, duration: actionDuration))
         
+        if recognizer.state == UIGestureRecognizerState.Ended {
+            println("panGesture ended")
+            
+            activeObject = nil
+            activeObjectOrigin = nil
+        }
         
-        // Stack height by index
-        cardNode.rootNode.position = handPosition
-        //cardNode.position.y = Float(CARD_DEPTH * CARD_RESIZE_FACTOR) * (Float(index)*2.0+0.5)
-        
-        
-        SCNTransaction.commit()
-        
-    }
-    
-//    func gatherCardsIntoDeck(position:SCNVector3) {
+//        recognizer.view!.center = CGPoint(x:recognizer.view!.center.x + translation.x,
+//            y:recognizer.view!.center.y + translation.y)
+//        recognizer.setTranslation(CGPointZero, inView: self.view)
 //        
-//        var index:Int
-//        
-//        //for index = 0; index < cardNodes.count; ++index {
-//        
-//        for (index, cardNode) in enumerate(cardNodes) {
+//        if recognizer.state == UIGestureRecognizerState.Ended {
+//            // 1
+//            let velocity = recognizer.velocityInView(self.view)
+//            let magnitude = sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y))
+//            let slideMultiplier = magnitude / 200
+//            println("magnitude: \(magnitude), slideMultiplier: \(slideMultiplier)")
 //            
-//            var cardNode = cardNodes[index]
+//            // 2
+//            let slideFactor = 0.1 * slideMultiplier     //Increase for more of a slide
+//            // 3
+//            var finalPoint = CGPoint(x:recognizer.view!.center.x + (velocity.x * slideFactor),
+//                y:recognizer.view!.center.y + (velocity.y * slideFactor))
+//            // 4
+//            finalPoint.x = min(max(finalPoint.x, 0), self.view.bounds.size.width)
+//            finalPoint.y = min(max(finalPoint.y, 0), self.view.bounds.size.height)
 //            
-//            cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
-//            
-//            SCNTransaction.begin()
-//            SCNTransaction.setAnimationDuration(2.0)
-//            
-//            println("card height \(index)")
-//            
-//            // Lay card flat
-//            println("card rotation x \(cardNode.rootNode.rotation.x)")
-//            //cardNode.rotation.x = CFloat(M_PI / 2)
-//            //cardNode.rotation.x = 0.5
-//            
-//            cardNode.rootNode.runAction(SCNAction.rotateByX(CGFloat(M_PI / 2), y: 0, z: 0, duration: 1))
-//
-//            
-//            // Stack height by index
-//            cardNode.rootNode.position = position
-//            cardNode.rootNode.position.y = Float(CARD_DEPTH * CARD_RESIZE_FACTOR) * (Float(index)*2.0+0.5)
-//            
-//            
-//            SCNTransaction.commit()
+//            // 5
+//            UIView.animateWithDuration(Double(slideFactor * 2),
+//                delay: 0,
+//                // 6
+//                options: UIViewAnimationOptions.CurveEaseOut,
+//                animations: {recognizer.view!.center = finalPoint },
+//                completion: nil)
 //        }
-//        
-//        // TODO the topmost card, show back
-//        
-//    }
-
+    }
+    
+    func getObjectFromHitTest(location:CGPoint) ->SCNNode? {
+        
+        var result:SCNNode?
+        let sceneView = self.view as SCNView
+        
+        let hitResults:NSArray = sceneView.hitTest(location, options: nil)!
+        //println("hit objects: \(hitResults)")
+        
+        if hitResults.count>0 {
+            println("first object")
+            result = hitResults[0].node! as SCNNode
+        } else {
+            println("no objects")
+            result = nil
+        }
+    
+        return result
+    }
     
     func handleTap(gestureRecognize: UIGestureRecognizer) {
         // retrieve the SCNView
@@ -484,21 +511,27 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         // check what nodes are tapped
         let p = gestureRecognize.locationInView(scnView)
-        if let hitResults = scnView.hitTest(p, options: nil) {
-            highlightObject(hitResults)
-        }
+//        if let hitResults = scnView.hitTest(p, options: nil) {
+//            highlightObject(hitResults)
+//        }
         
+        highlightObject(getObjectFromHitTest(p))
         
     }
     
-    func highlightObject(hitResults:NSArray) {
+    //func highlightObject(hitResults:NSArray) {
+    func highlightObject(hitResult:AnyObject?) {
+        
         // check that we clicked on at least one object
-        if hitResults.count > 0 {
+        //if hitResults.count > 0 {
+        if hitResult !== nil {
+            
             // retrieved the first clicked object
-            let result: AnyObject! = hitResults[0]
+            //let result: AnyObject! = hitResults[0]
+            let result = hitResult as SCNNode
             
             // get its material
-            let material = result.node!.geometry!.firstMaterial!
+            let material = result.geometry!.firstMaterial!
             
             // highlight it
             SCNTransaction.begin()

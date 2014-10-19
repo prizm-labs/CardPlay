@@ -14,3 +14,7 @@ iOSNative/CardPlay/CardPlay.xcodeproj/xcuserdata/mac.xcuserdatad/xcschemes/xcsch
 iOSNative/CardPlay/CardPlay.xcodeproj/xcuserdata/mac.xcuserdatad/xcschemes/CardPlay.xcscheme
 
 .DS_Store
+
+*.xcbkptlist
+
+iOSNative/CardPlay/CardPlay.xcodeproj/xcuserdata/michaelgarrido.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist

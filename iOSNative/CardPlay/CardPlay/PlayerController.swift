@@ -47,6 +47,14 @@ class Player {
         handGroup.organize(handGroup.organizationMode, vector: SCNVector3Zero, duration: 2.0)
     }
     
+    func drawCardsFromGroup(drawCount:Int, group:CardGroup){
+        
+        // draw from top
+        
+        // draw from bottom
+        
+    }
+    
     
     
     // define hand zone
