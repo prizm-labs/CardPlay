@@ -17,7 +17,6 @@ import Foundation
 
 class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysicsContactDelegate {
     
-    
     let ORB_RADIUS = CGFloat(15)
     let CARD_WIDTH = CGFloat(500)
     let CARD_HEIGHT = CGFloat(726)
@@ -42,6 +41,9 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     var _cameraHandle:SCNNode!
     var _cameraOrientation:SCNNode!
     
+    var camera:Camera!
+    var perspectives:NSMutableArray = []
+    
     var _cameraHandleTransforms = [SCNMatrix4](count:10, repeatedValue:SCNMatrix4(m11: 0.0, m12: 0.0, m13: 0.0, m14: 0.0, m21: 0.0, m22: 0.0, m23: 0.0, m24: 0.0, m31: 0.0, m32: 0.0, m33: 0.0, m34: 0.0, m41: 0.0, m42: 0.0, m43: 0.0, m44: 0.0))
     
     
@@ -62,18 +64,64 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     var activeObject:SCNNode?
     var activeObjectOrigin:SCNVector3?
     
+    // Accelerometer
+    var motionManager:CMMotionManager!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
     }
     
-    func setupAccelerometer() {
+    func parseAcceleration(acceleration:CMAcceleration){
         
-        let motionManager: CMMotionManager = CMMotionManager()
-        if (motionManager.accelerometerAvailable) {
-            motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue()) {
-                (data, error) in
+        println("parseAcceleration x:\(acceleration.x), y:\(acceleration.y), z:\(acceleration.z)")
+        var activePerspective:CameraPerspective?
+        
+        // landscape
+        // x = 1    vertical   perpendicular to tabletop
+        // x = 0    horizontal parallel to tabletop
+        
+        if acceleration.x<0.6 || -acceleration.x>0.6 {
+            println("switch to horizontal")
+            activePerspective = perspectives[1] as? CameraPerspective
+            
+        } else {
+            println("switch to vertical")
+            activePerspective = perspectives[0] as? CameraPerspective
+        }
+        
+        
+        // portrait 
+        // y = -1   vertical   perpendicular to tabletop
+        // y = 0    horizontal parallel to tabletop
+        
+        if -acceleration.y>0.8 && -acceleration.y<1.2 {
+            println("switch to horizontal")
+        } else {
+            println("switch to vertical")
+        }
+        
+        if activePerspective? !== nil {
+            activePerspective?.transformCamera(self.camera)
+        }
+        
+        
+    }
+    
+    func setupAccelerometer() {
+        println("setupAccelerometer")
+        
+        motionManager = CMMotionManager()
+        motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: { (accelerometerData, error) -> Void in
+            self.parseAcceleration(accelerometerData.acceleration)
+        })
+        
+//        if (motionManager.accelerometerAvailable) {
+//            motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue()) {
+//                (data, error) in
+//                
+//                println("accelerometer \(data.acceleration)")
 //                let currentX = monkey.position.x
 //                let currentY = monkey.position.y
 //                if(data.acceleration.y < -0.25) { // tilting the device to the right
@@ -89,9 +137,35 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
 //                    let action = SKAction.moveTo(CGPointMake(destX, destY), duration: 1)
 //                    monkey.runAction(action)
 //                }
-            }
+//            }
+//            
+//        }
+        
+    }
+    
+    func updateGestures(){
+        
+        switch camera.orientationMode {
+            
+        case .PlayerHand:
+            println("PlayerHand")
+            // 1F pan on object to translate in vertical plane
+            
+        case .TableOverhead:
+            println("TableOverhead")
+            // 1F pan on object to translate in horizontal plane
+            
+        case .TablePanorama:
+            println("TablePanorama")
+            //
+            
+        case .Opponent:
+            println("Opponent")
             
         }
+        
+        
+        // TODO determine object specific bindings???
         
     }
     
@@ -163,6 +237,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             gestureRecognizers.addObjectsFromArray(existingGestureRecognizers)
         }
         sceneView.gestureRecognizers = gestureRecognizers
+        
 
         
 //        var overlay = SpriteKitOverlayScene
@@ -207,14 +282,24 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     func setupPlayerCamera() {
         
-        
-        var camera = Camera()
+        camera = Camera()
         
         _scene.rootNode.addChildNode(camera.positionHandle)
         _cameraNode = camera.cameraNode
         
         // position default behind player
-        camera.transform(SCNVector3Make(0,150,Float(TABLE_RADIUS*0.75)), orientation: SCNVector3Make(-CFloat(M_PI * 0.15), 0, 0))
+        var playerDefaultPerspective = CameraPerspective(orientation: SCNVector3Make(-CFloat(M_PI * 0.15), 0, 0), position: SCNVector3Make(0,150,Float(TABLE_RADIUS*0.75)))
+        
+        // position over table
+        var tableDefaultPerspective = CameraPerspective(orientation: SCNVector3Make(-CFloat(M_PI_2),0,0), position: SCNVector3Make(0, 250, 0))
+        
+        self.perspectives.addObject(playerDefaultPerspective)
+        self.perspectives.addObject(tableDefaultPerspective)
+        
+        //camera.transform(SCNVector3Make(0,150,Float(TABLE_RADIUS*0.75)), orientation: SCNVector3Make(-CFloat(M_PI * 0.15), 0, 0))
+        
+        // Accelerometer bound to... camera?
+        setupAccelerometer()
     }
     
     func setupEnvironment() {

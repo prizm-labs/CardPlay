@@ -10,7 +10,32 @@ import Foundation
 import SceneKit
 import UIKit
 
+class CameraPerspective {
+    var orientation:SCNVector3!
+    var position:SCNVector3!
+    
+    init(orientation:SCNVector3, position:SCNVector3) {
+        self.orientation = orientation
+        self.position = position
+    }
+    
+    init(camera:Camera) {
+        // copy transform from existing camera
+        self.orientation = camera.orientationHandle.eulerAngles
+        self.position = camera.positionHandle.position
+    }
+    
+    func transformCamera(camera:Camera) {
+        camera.positionHandle.position = self.position
+        camera.orientationHandle.eulerAngles = self.orientation
+    }
+    
+}
+
+
 class Camera {
+    
+    var perspectives:NSMutableArray = []
     
     var cameraNode:SCNNode!
     var positionHandle:SCNNode!
@@ -19,7 +44,24 @@ class Camera {
     var orientation:SCNVector3!
     var position:SCNVector3!
     
+    var orientationMode:OrientationMode
+    
+    enum OrientationMode {
+        case PlayerHand, TableOverhead, TablePanorama, Opponent
+    }
+    // update gesture bindings based on camera orientation mode
+    /*
+        case PlayerHand
+        translate card in vertical plane
+    */
+    /*
+        case TableOverhead
+        translate card in horizontal plane
+    */
+    
+    
     init(){
+        
     
         // create and add a camera to the scene
         cameraNode = SCNNode()
@@ -32,6 +74,8 @@ class Camera {
         
         positionHandle.addChildNode(orientationHandle)
         orientationHandle.addChildNode(cameraNode)
+        
+        orientationMode = OrientationMode.PlayerHand
         
         var camera = SCNCamera()
         camera.zFar = 2000
@@ -65,7 +109,7 @@ class Camera {
         //cameraNode.camera
     }
     
-    func registerPresetTransform(){
+    func setPerspective(){
         
     }
     

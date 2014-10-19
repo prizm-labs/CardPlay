@@ -69,7 +69,7 @@ class CardNode {
         
         _cardBack = SCNNode(geometry: cardBackPlane)
         _cardBack.name = "cardBack"
-        _cardBack.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, 0, 0)
+        _cardBack.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, CFloat(size.height)*0.5, 0)
         //cardBack.pivot = SCNMatrix4MakeTranslation(CFloat(CARD_WIDTH*CARD_RESIZE_FACTOR), CFloat(CARD_HEIGHT*CARD_RESIZE_FACTOR), 0)
         
         var backMaterial = SCNMaterial()
@@ -79,7 +79,7 @@ class CardNode {
         
         _cardFront = SCNNode(geometry: cardFrontPlane)
         _cardFront.name = "cardFront"
-        _cardFront.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, 0, 0)
+        _cardFront.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, CFloat(size.height)*0.5, 0)
         
         var frontMaterial = SCNMaterial()
         frontMaterial.diffuse.contents =  cardFrontImage
@@ -99,7 +99,7 @@ class CardNode {
         
         _cardBody = SCNNode(geometry: cardVolume);
         _cardBody.name = "cardBody"
-        _cardBody.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, 0, 0)
+        _cardBody.pivot = SCNMatrix4MakeTranslation(CFloat(size.width)*0.5, CFloat(size.height)*0.5, 0)
         //        cardNode.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Dynamic, shape: nil)
         //        cardNode.physicsBody?.restitution = 0.01
         //        cardNode.physicsBody?.mass = 5
