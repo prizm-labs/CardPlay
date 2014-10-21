@@ -101,14 +101,17 @@ class CardGroup {
                     SCNTransaction.setAnimationDuration(2.0)
                 }
                 
-            
-                cardNode.rootNode.eulerAngles = self.orientation
+                cardNode.setOrientation(self.orientation)
+                //cardNode.rootNode.eulerAngles = self.orientation
                 
                 // TODO stack along vector
                 
                 // Stack height by index
-                cardNode.rootNode.position = self.origin
-                cardNode.rootNode.position.y = Float(cardNode.size.thickness) * (Float(index)*2.0+0.5)
+//                cardNode.rootNode.position = self.origin
+//                cardNode.rootNode.position.y = Float(cardNode.size.thickness) * (Float(index)*2.0+0.5)
+                
+                cardNode.positionHandle.position = self.origin
+                cardNode.positionHandle.position.y = Float(cardNode.size.thickness) * (Float(index)*2.0+0.5)
                 
                 if duration>0 {
                     SCNTransaction.commit()
@@ -129,13 +132,14 @@ class CardGroup {
                     SCNTransaction.setAnimationDuration(2.0)
                 }
                 
-                
-                cardNode.rootNode.eulerAngles = self.orientation
+                cardNode.orientationHandle.eulerAngles = self.orientation
+                cardNode.positionHandle.position = self.origin
+                //cardNode.rootNode.eulerAngles = self.orientation
                 
                 // TODO stack along vector
                 
                 // Stack height by index
-                cardNode.rootNode.position = self.origin
+                //cardNode.rootNode.position = self.origin
                 //cardNode.rootNode.position.y = Float(cardNode.size.thickness) * (Float(index)*2.0+0.5)
                 
                 if duration>0 {

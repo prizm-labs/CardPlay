@@ -35,6 +35,19 @@ class CardSize {
     }
 }
 
+class RootNode:SCNNode {
+    
+    var parentObject:CardNode!
+    
+    init(parentObject:CardNode) {
+        super.init()
+        self.parentObject = parentObject
+    }
+    
+    required init(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+}
 
 class CardNode {
     
@@ -47,7 +60,14 @@ class CardNode {
     
     var size:CardSize!
     
-    var rootNode:SCNNode!
+    var orientation:SCNVector3!
+    
+    //var rootNode:SCNNode!
+    var rootNode:RootNode!
+    
+    var positionHandle:SCNNode!
+    var orientationHandle:SCNNode!
+    
     var currentRenderMode = RenderModes.FrontAndBack
     
     var _cardBack:SCNNode!
@@ -59,7 +79,13 @@ class CardNode {
     
         self.size = size
         
-        rootNode = SCNNode()
+        self.orientation = SCNVector3Zero
+        
+        //rootNode = SCNNode()
+        rootNode = RootNode(parentObject: self)
+        
+        positionHandle = SCNNode()
+        orientationHandle = SCNNode()
         
         var cardPath:UIBezierPath = UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: size.width, height: size.height), cornerRadius: size.cornerRadius)
     
@@ -109,7 +135,53 @@ class CardNode {
         rootNode.addChildNode(_cardFront)
         rootNode.addChildNode(_cardBack)
         
+        orientationHandle.addChildNode(rootNode)
+        positionHandle.addChildNode(orientationHandle)
+        
         //updateRenderMode(currentRenderMode)
+        
+    }
+    
+    func setOrientation(orientation:SCNVector3) {
+        
+        // define the plane for card transform: top-right corner
+        // direction = x-axis positive, front facing
+        // orientation = y-axis positive, front facing
+        
+        
+        // define transform for face-up in plane
+        // define transform for face-down in plane
+        
+        println("setOrientation: \(orientation.x), \(orientation.y), \(orientation.z)")
+        self.orientation = orientation
+        //rootNode.eulerAngles = orientation
+        orientationHandle.eulerAngles = orientation
+    }
+    
+    func flip(duration:Float) {
+        
+        println("card:flip, \(rootNode.rotation), \(rootNode.eulerAngles)")
+        
+        if duration>0 {
+            SCNTransaction.begin()
+            SCNTransaction.setAnimationDuration(CFTimeInterval(duration))
+        }
+        
+        // TODO rotate around group's orientation
+        
+        rootNode.rotation = SCNVector4Make(self.orientation.x, self.orientation.y, self.orientation.z, CFloat(M_PI))
+        //rootNode.rotation = SCNVector4Make(0, 1.0, 0, CFloat(M_PI))
+        //rootNode.eulerAngles = self.orientation
+        
+        // TODO stack along vector
+        
+        // Stack height by index
+//        cardNode.rootNode.position = self.origin
+//        cardNode.rootNode.position.y = Float(cardNode.size.thickness) * (Float(index)*2.0+0.5)
+        
+        if duration>0 {
+            SCNTransaction.commit()
+        }
         
     }
     

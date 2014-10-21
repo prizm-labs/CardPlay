@@ -44,6 +44,9 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     var camera:Camera!
     var perspectives:NSMutableArray = []
     
+    // Gestures
+    var gestureLibrary:[String:UIGestureRecognizer]!
+    
     var _cameraHandleTransforms = [SCNMatrix4](count:10, repeatedValue:SCNMatrix4(m11: 0.0, m12: 0.0, m13: 0.0, m14: 0.0, m21: 0.0, m22: 0.0, m23: 0.0, m24: 0.0, m31: 0.0, m32: 0.0, m33: 0.0, m34: 0.0, m41: 0.0, m42: 0.0, m43: 0.0, m44: 0.0))
     
     
@@ -63,6 +66,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     var activeObject:SCNNode?
     var activeObjectOrigin:SCNVector3?
+    var activeCard:CardNode?
     
     // Accelerometer
     var motionManager:CMMotionManager!
@@ -75,7 +79,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     func parseAcceleration(acceleration:CMAcceleration){
         
-        println("parseAcceleration x:\(acceleration.x), y:\(acceleration.y), z:\(acceleration.z)")
+        //println("parseAcceleration x:\(acceleration.x), y:\(acceleration.y), z:\(acceleration.z)")
         var activePerspective:CameraPerspective?
         
         // landscape
@@ -83,12 +87,15 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         // x = 0    horizontal parallel to tabletop
         
         if acceleration.x<0.6 || -acceleration.x>0.6 {
-            println("switch to horizontal")
+            //println("switch to horizontal")
             activePerspective = perspectives[1] as? CameraPerspective
+            camera.orientationMode = Camera.OrientationMode.TableOverhead
+            
             
         } else {
-            println("switch to vertical")
+            //println("switch to vertical")
             activePerspective = perspectives[0] as? CameraPerspective
+            camera.orientationMode = Camera.OrientationMode.PlayerHand
         }
         
         
@@ -104,6 +111,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         if activePerspective? !== nil {
             activePerspective?.transformCamera(self.camera)
+            updateGestures()
         }
         
         
@@ -143,6 +151,41 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
     }
     
+    func setupGestures() {
+        
+        let sceneView = view as SCNView
+        
+        // TODO double tap to flip card over
+        //let doubleTapGesture = UITapGestureRecognizer(target: self, action: "handleTap:")
+        
+        // pinch gesture
+        // zoom camera in and out
+        let pinchGesture = UIPinchGestureRecognizer(target: self, action: "handlePinch:")
+        
+        // add a tap gesture recognizer
+        let tapGesture = UITapGestureRecognizer(target: self, action: "handleTap:")
+        //let tapGesture = UITapGestureRecognizer(target: self, action: "moveCamera")
+        
+        let panGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
+        
+        gestureLibrary = [
+            "OnTapHighlightObject": tapGesture,
+            "OnPanTranslateObject":panGesture,
+            "OnPinchZoomCamera":pinchGesture
+        ]
+        
+        let gestureRecognizers = NSMutableArray()
+        gestureRecognizers.addObject(tapGesture)
+        gestureRecognizers.addObject(panGesture)
+        gestureRecognizers.addObject(pinchGesture)
+        
+        if let existingGestureRecognizers = sceneView.gestureRecognizers {
+            gestureRecognizers.addObjectsFromArray(existingGestureRecognizers)
+        }
+        sceneView.gestureRecognizers = gestureRecognizers
+        
+    }
+    
     func updateGestures(){
         
         switch camera.orientationMode {
@@ -150,6 +193,10 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         case .PlayerHand:
             println("PlayerHand")
             // 1F pan on object to translate in vertical plane
+            
+//            let gestureRecognizers = NSMutableArray()
+//            gestureRecognizers.addObject(tapGesture)
+//            gestureRecognizers.addObject(panGesture)
             
         case .TableOverhead:
             println("TableOverhead")
@@ -178,6 +225,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
         // cache for binding objects to gestures
         activeObject = nil
+        activeCard = nil
         
         // Get cards manifest
 
@@ -223,21 +271,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         sceneView.showsStatistics = true
         
-        // add a tap gesture recognizer
-        let tapGesture = UITapGestureRecognizer(target: self, action: "handleTap:")
-        //let tapGesture = UITapGestureRecognizer(target: self, action: "moveCamera")
-        
-        let panGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
-        
-        let gestureRecognizers = NSMutableArray()
-        gestureRecognizers.addObject(tapGesture)
-        gestureRecognizers.addObject(panGesture)
-        
-        if let existingGestureRecognizers = sceneView.gestureRecognizers {
-            gestureRecognizers.addObjectsFromArray(existingGestureRecognizers)
-        }
-        sceneView.gestureRecognizers = gestureRecognizers
-        
+
+        setupGestures()
 
         
 //        var overlay = SpriteKitOverlayScene
@@ -481,6 +516,12 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
     }
     
+    func handlePinch(recognizer:UIPinchGestureRecognizer) {
+        
+        println("handlePinch, scale:\(recognizer.scale)")
+        
+    }
+    
     func handlePan(recognizer:UIPanGestureRecognizer) {
         //comment for panning
         //uncomment for tickling
@@ -507,8 +548,17 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
                 if object?.name == "cardFront" || object?.name == "cardBack" {
                     
                     // cache object
-                    activeObject = object?.parentNode
-                    activeObjectOrigin = object?.parentNode?.position
+                    
+                    
+                    var rootNode = object?.parentNode as? RootNode
+                    activeCard = rootNode?.parentObject
+
+                    activeObject = activeCard?.positionHandle
+                    activeObjectOrigin = activeCard?.positionHandle?.position
+                    
+//                    activeObject = object?.parentNode
+//                    activeObjectOrigin = object?.parentNode?.position
+                    
                     //activeObjectOrigin = SCNVector3Make(CFloat(object?.position.x), CFloat(object?.position.y), CFloat(object?.position.z))
                     
                 }
@@ -521,11 +571,26 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         if activeObject != nil {
             // manipulate object
             
+            println("card flip")
+            activeCard?.flip(1.0)
+            
             let x = activeObjectOrigin?.x
             let y = activeObjectOrigin?.y
             let z = activeObjectOrigin?.z
             
-            activeObject?.position = SCNVector3Make(x! + CFloat(translation.x), y! - CFloat(translation.y), z!)
+            switch camera.orientationMode {
+                
+            case .TableOverhead:
+                activeObject?.position = SCNVector3Make(x! + CFloat(translation.x), y!, z! + CFloat(translation.y))
+                
+            case .PlayerHand:
+                activeObject?.position = SCNVector3Make(x! + CFloat(translation.x), y! - CFloat(translation.y), z!)
+                
+            default:
+                println()
+            }
+            
+            
             
             //                activeObject.position?.x = activeObjectOrigin.x? + CFloat(translation.x)
             //                activeObject?.position.y = CFloat(activeObjectOrigin?.y+translation.y)
@@ -538,6 +603,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             
             activeObject = nil
             activeObjectOrigin = nil
+            activeCard = nil
         }
         
 //        recognizer.view!.center = CGPoint(x:recognizer.view!.center.x + translation.x,

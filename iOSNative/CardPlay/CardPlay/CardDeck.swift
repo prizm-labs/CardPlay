@@ -35,7 +35,8 @@ class Deck {
             //var cardNode = createCard(imageFront!, cardBackImage:imageBack!)
             
             var cardNode = CardNode(size:size, cardFrontImage: imageFront!, cardBackImage: imageBack!)
-            cardNode.rootNode.position = self.origin
+            //cardNode.rootNode.position = self.origin
+            cardNode.positionHandle.position = self.origin
             
             cards.addObject(cardNode)
             
@@ -62,7 +63,9 @@ class Deck {
         
         for (index, cardNode) in enumerate(cards) {
             var cardNode:CardNode = cards[index] as CardNode
-            rootNode.addChildNode(cardNode.rootNode)
+            //rootNode.addChildNode(cardNode.rootNode)
+            
+            rootNode.addChildNode(cardNode.positionHandle)
         }
     }
     
