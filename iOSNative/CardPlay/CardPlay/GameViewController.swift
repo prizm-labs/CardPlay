@@ -86,7 +86,10 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         // x = 1    vertical   perpendicular to tabletop
         // x = 0    horizontal parallel to tabletop
         
-        if acceleration.x<0.6 || -acceleration.x>0.6 {
+        let x = acceleration.x
+        let threshold = 0.6
+        
+        if x < threshold && x > -threshold {
             //println("switch to horizontal")
             activePerspective = perspectives[1] as? CameraPerspective
             camera.orientationMode = Camera.OrientationMode.TableOverhead
@@ -104,14 +107,16 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         // y = 0    horizontal parallel to tabletop
         
         if -acceleration.y>0.8 && -acceleration.y<1.2 {
-            println("switch to horizontal")
+            //println("switch to horizontal")
         } else {
-            println("switch to vertical")
+            //println("switch to vertical")
         }
         
         if activePerspective? !== nil {
             activePerspective?.transformCamera(self.camera)
-            updateGestures()
+            
+            // TODO update gestures???
+            //updateGestures()
         }
         
         
@@ -407,21 +412,21 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     func setupInitialLighting() {
         
-        _playerOrb = SCNNode(geometry: SCNSphere(radius: ORB_RADIUS))
-        //_playerOrb.geometry.firstMaterial.diffuse.contents = SKColor(red: 1.0, green: 0, blue: 0, alpha: 1.0)
-        _playerOrb.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Dynamic, shape: nil)
-        _playerOrb.physicsBody?.restitution = 0.9
+//        _playerOrb = SCNNode(geometry: SCNSphere(radius: ORB_RADIUS))
+//        //_playerOrb.geometry.firstMaterial.diffuse.contents = SKColor(red: 1.0, green: 0, blue: 0, alpha: 1.0)
+//        _playerOrb.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Dynamic, shape: nil)
+//        _playerOrb.physicsBody?.restitution = 0.9
+//        
+//        _playerOrb.position = SCNVector3Make(0, 0, 0)
+//        _playerOrb.position.y += CFloat(ORB_RADIUS * 8)
+//        
+//        _scene.rootNode.addChildNode(_playerOrb)
         
-        _playerOrb.position = SCNVector3Make(0, 0, 0)
-        _playerOrb.position.y += CFloat(ORB_RADIUS * 8)
         
-        _scene.rootNode.addChildNode(_playerOrb)
-        
-        
-        var cardNode = createCard("ace_of_spades.png", cardBackImage:"back-default.png")
-        cardNode.position = SCNVector3Make(0, 0, 0)
-        cardNode.position.y += 50
-        _scene.rootNode.addChildNode(cardNode)
+//        var cardNode = createCard("ace_of_spades.png", cardBackImage:"back-default.png")
+//        cardNode.position = SCNVector3Make(0, 0, 0)
+//        cardNode.position.y += 50
+//        _scene.rootNode.addChildNode(cardNode)
         
         //cardNode.runAction(SCNAction.repeatActionForever(SCNAction.rotateByX(0, y: CGFloat(M_PI), z: 0, duration: 4)))
 
@@ -522,6 +527,94 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
     }
     
+    func handleTap(recognizer: UIGestureRecognizer) {
+        // retrieve the SCNView
+        let scnView = self.view as SCNView
+        
+        
+        // check what nodes are tapped
+        let p = recognizer.locationInView(scnView)
+        //        if let hitResults = scnView.hitTest(p, options: nil) {
+        //            highlightObject(hitResults)
+        //        }
+        
+       
+        
+        
+        
+        let object:SCNNode? = getObjectFromHitTest(p)
+        
+        if object !== nil {
+            
+            let cardNode = findActiveObject(object!) as CardNode?
+            
+            if cardNode != nil {
+                cardNode?.flip(1.0)
+            }
+        }
+        
+        
+        if recognizer.state == UIGestureRecognizerState.Ended {
+            println("tapGesture ended")
+            
+            //releaseActiveObject()
+            
+        }
+        
+    }
+    
+    func releaseActiveObject(){
+        
+        println("releaseActiveObject")
+        
+        activeObject = nil
+        activeObjectOrigin = nil
+        activeCard = nil
+    }
+    
+    func findActiveObject(object:SCNNode) -> CardNode? {
+        
+        if object.name == "cardFront" || object.name == "cardBack" {
+            
+            let rootNode = object.parentNode as? RootNode
+            return rootNode?.parentObject
+            
+        } else {
+            return nil
+        }
+    }
+    
+    func setActiveObject(object:SCNNode) {
+        
+        if activeObject == nil {
+            
+            
+            
+            // if card, bind to root node
+            if object.name == "cardFront" || object.name == "cardBack" {
+            //if object.name == "cardFront" || object.name == "cardBack" || object.name == "cardBody" {
+                // cache object
+                
+                
+                println("setActiveObject")
+                
+                var rootNode = object.parentNode as? RootNode
+                activeCard = rootNode?.parentObject
+                
+                activeObject = activeCard?.positionHandle
+                activeObjectOrigin = activeCard?.positionHandle?.position
+                
+                //                    activeObject = object?.parentNode
+                //                    activeObjectOrigin = object?.parentNode?.position
+                
+                //activeObjectOrigin = SCNVector3Make(CFloat(object?.position.x), CFloat(object?.position.y), CFloat(object?.position.z))
+                
+            }
+            
+        }
+        
+    }
+    
     func handlePan(recognizer:UIPanGestureRecognizer) {
         //comment for panning
         //uncomment for tickling
@@ -542,37 +635,12 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         if object !== nil {
             println("pan inside object")
             
-            if activeObject == nil {
-                
-                // if card, bind to root node
-                if object?.name == "cardFront" || object?.name == "cardBack" {
-                    
-                    // cache object
-                    
-                    
-                    var rootNode = object?.parentNode as? RootNode
-                    activeCard = rootNode?.parentObject
-
-                    activeObject = activeCard?.positionHandle
-                    activeObjectOrigin = activeCard?.positionHandle?.position
-                    
-//                    activeObject = object?.parentNode
-//                    activeObjectOrigin = object?.parentNode?.position
-                    
-                    //activeObjectOrigin = SCNVector3Make(CFloat(object?.position.x), CFloat(object?.position.y), CFloat(object?.position.z))
-                    
-                }
-                
-                
-                
-            }
+            setActiveObject(object!)
         }
         
         if activeObject != nil {
             // manipulate object
             
-            println("card flip")
-            activeCard?.flip(1.0)
             
             let x = activeObjectOrigin?.x
             let y = activeObjectOrigin?.y
@@ -601,9 +669,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         if recognizer.state == UIGestureRecognizerState.Ended {
             println("panGesture ended")
             
-            activeObject = nil
-            activeObjectOrigin = nil
-            activeCard = nil
+            releaseActiveObject()
+            
         }
         
 //        recognizer.view!.center = CGPoint(x:recognizer.view!.center.x + translation.x,
@@ -654,21 +721,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
         return result
     }
-    
-    func handleTap(gestureRecognize: UIGestureRecognizer) {
-        // retrieve the SCNView
-        let scnView = self.view as SCNView
-        
-        
-        // check what nodes are tapped
-        let p = gestureRecognize.locationInView(scnView)
-//        if let hitResults = scnView.hitTest(p, options: nil) {
-//            highlightObject(hitResults)
-//        }
-        
-        highlightObject(getObjectFromHitTest(p))
-        
-    }
+
     
     //func highlightObject(hitResults:NSArray) {
     func highlightObject(hitResult:AnyObject?) {

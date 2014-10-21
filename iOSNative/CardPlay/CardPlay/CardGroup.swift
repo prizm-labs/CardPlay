@@ -94,7 +94,9 @@ class CardGroup {
                 
                 var cardNode:CardNode = cards[index] as CardNode
                 
-                cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
+                //cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
+                
+                cardNode.updateRenderMode(CardNode.RenderModes.FrontAndBack)
                 
                 if duration>0 {
                     SCNTransaction.begin()

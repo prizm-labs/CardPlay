@@ -58,6 +58,8 @@ class CardNode {
         case BodyOnly
     }
     
+    var isFlipped = false
+    
     var size:CardSize!
     
     var orientation:SCNVector3!
@@ -76,7 +78,8 @@ class CardNode {
     
     
     init(size:CardSize, cardFrontImage:String, cardBackImage:String){
-    
+
+        
         self.size = size
         
         self.orientation = SCNVector3Zero
@@ -165,20 +168,20 @@ class CardNode {
         if duration>0 {
             SCNTransaction.begin()
             SCNTransaction.setAnimationDuration(CFTimeInterval(duration))
+            
+            SCNTransaction.setCompletionBlock({ () -> Void in
+                var rotationNeutral:CFloat = self.isFlipped ? CFloat(M_PI) : 0
+                self.rootNode.rotation = SCNVector4Make(0, 1.0, 0, rotationNeutral)
+            })
         }
         
-        // TODO rotate around group's orientation
+        isFlipped = !isFlipped
         
-        rootNode.rotation = SCNVector4Make(self.orientation.x, self.orientation.y, self.orientation.z, CFloat(M_PI))
-        //rootNode.rotation = SCNVector4Make(0, 1.0, 0, CFloat(M_PI))
-        //rootNode.eulerAngles = self.orientation
+        var rotation:CFloat = isFlipped ? CFloat(M_PI-0.01) : CFloat(2*M_PI-0.01)
         
-        // TODO stack along vector
-        
-        // Stack height by index
-//        cardNode.rootNode.position = self.origin
-//        cardNode.rootNode.position.y = Float(cardNode.size.thickness) * (Float(index)*2.0+0.5)
-        
+        // Flip across relative y-axis, facing UP
+        rootNode.rotation = SCNVector4Make(0, 1.0, 0, rotation)
+
         if duration>0 {
             SCNTransaction.commit()
         }
@@ -216,13 +219,15 @@ class CardNode {
             println("FrontOnly")
             _cardFront.hidden = false
             _cardBack.hidden = true
-            _cardBody.hidden = false
+            //_cardBody.hidden = false
+            _cardBody.hidden = true
             
         case .BackOnly:
             println("BackOnly")
             _cardFront.hidden = true
             _cardBack.hidden = false
-            _cardBody.hidden = false
+            //_cardBody.hidden = false
+            _cardBody.hidden = true
             
         case .BodyOnly:
             println("BodyOnly")
