@@ -19,14 +19,26 @@ class Deck {
     
     var group:CardGroup!
     
+    var imageBack:UIImage!
+    
     init(atlas:[String:String], manifest:[[String]], size:CardSize, origin:SCNVector3) {
+        
+        imageBack = nil
+        
         for card in manifest {
             
             self.size = size
             self.origin = origin
             
-            let imageFront = atlas[card[1]]
-            let imageBack = atlas[card[0]]
+//            let imageFront = atlas[card[1]]
+//            let imageBack = atlas[card[0]]
+            
+            // cache back image 
+            if imageBack==nil {
+                imageBack = UIImage(named:atlas[card[0]] as String!)
+            }
+            
+            let imageFront = UIImage(named: atlas[card[1]] as String!)
             
             //rootNode = SCNNode()
             
@@ -34,7 +46,10 @@ class Deck {
             
             //var cardNode = createCard(imageFront!, cardBackImage:imageBack!)
             
-            var cardNode = CardNode(size:size, cardFrontImage: imageFront!, cardBackImage: imageBack!)
+            
+            //var cardNode = CardNode(size:size, cardFrontImage: imageFront!, cardBackImage: imageBack!)
+            var cardNode = CardNode(size:size, cardFrontImage: imageFront, cardBackImage: imageBack)
+            
             //cardNode.rootNode.position = self.origin
             cardNode.positionHandle.position = self.origin
             

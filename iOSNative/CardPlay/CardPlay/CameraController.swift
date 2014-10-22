@@ -13,16 +13,28 @@ import UIKit
 class CameraPerspective {
     var orientation:SCNVector3!
     var position:SCNVector3!
+    //var orientationMode:Camerea
     
-    init(orientation:SCNVector3, position:SCNVector3) {
+    var zoomPositionStart:SCNVector3?
+
+    
+
+    func initRoot(orientation:SCNVector3, position:SCNVector3) {
         self.orientation = orientation
         self.position = position
+        //self.key = key
+        
+        zoomPositionStart = nil
     }
+    
+    init(orientation:SCNVector3, position:SCNVector3) {
+        initRoot(orientation, position:position)
+    }
+
     
     init(camera:Camera) {
         // copy transform from existing camera
-        self.orientation = camera.orientationHandle.eulerAngles
-        self.position = camera.positionHandle.position
+        initRoot(camera.orientationHandle.eulerAngles, position:camera.positionHandle.position)
     }
     
     func transformCamera(camera:Camera) {
@@ -30,10 +42,18 @@ class CameraPerspective {
         camera.orientationHandle.eulerAngles = self.orientation
     }
     
+    
+    func cachePosition(){
+        
+        // save position relative to perspective
+        
+    }
 }
 
 
 class Camera {
+    
+    var isInteractive = true
     
     var perspectives:NSMutableArray = []
     
@@ -45,6 +65,9 @@ class Camera {
     var position:SCNVector3!
     
     var orientationMode:OrientationMode
+    
+    var zoomPositionStart:SCNVector3?
+    var panPositionStart:SCNVector3?
     
     enum OrientationMode {
         case PlayerHand, TableOverhead, TablePanorama, Opponent
@@ -62,6 +85,8 @@ class Camera {
     
     init(){
         
+        zoomPositionStart = nil
+        panPositionStart = nil
     
         // create and add a camera to the scene
         cameraNode = SCNNode()
@@ -94,14 +119,30 @@ class Camera {
         //
     }
     
-    func transform(position:SCNVector3, orientation:SCNVector3) {
+    func transform(position:SCNVector3, orientation:SCNVector3, duration:Float) {
+        
+        if (!isInteractive) {
+            return
+        }
+        
+        isInteractive = false
         
         self.position = position
         self.orientation = orientation
         
+        //if duration>0 {
+        SCNTransaction.begin()
+        SCNTransaction.setAnimationDuration(CFTimeInterval(duration))
+        
+        SCNTransaction.setCompletionBlock({ () -> Void in
+            self.isInteractive = true
+        })
+        //}
         
         positionHandle.position = self.position
         orientationHandle.eulerAngles = self.orientation
+        
+        SCNTransaction.commit()
     }
     
     func lookAtNode(target:SCNNode) {
@@ -113,6 +154,94 @@ class Camera {
         
     }
     
+    func pan(translation:CGPoint) {
+        
+        if panPositionStart == nil {
+            
+            panPositionStart = SCNVector3Make(positionHandle.position.x,positionHandle.position.y,positionHandle.position.z)
+        } else {
+            
+            let x = panPositionStart?.x
+            let y = panPositionStart?.y
+            let z = panPositionStart?.z
+            
+            switch orientationMode {
+                
+            case .TableOverhead:
+                positionHandle.position = SCNVector3Make(x! - CFloat(translation.x), y!, z! + CFloat(translation.y))
+                
+            case .PlayerHand:
+                positionHandle.position = SCNVector3Make(x! - CFloat(translation.x), y! - CFloat(translation.y), z!)
+                
+            default:
+                println()
+            }
+            
+        }
+
+    }
+    
+    func resetPan() {
+        
+        println("resetPan")
+        panPositionStart = nil
+        
+    }
+    
+    
+    //func zoom(scale:CFloat) {
+    func zoom(rotation:CFloat) {
+        
+        if zoomPositionStart == nil {
+            zoomPositionStart = SCNVector3Make(positionHandle.position.x, positionHandle.position.y, positionHandle.position.z)
+        } else {
+            
+            let zoomIn = rotation > 0
+            //let zoomIn = scale > 1 // zoom mapped to pinch scale
+            
+            let maxDelta:CFloat = CFloat(300.0)
+            var delta:CFloat!
+            var zoomPosition:SCNVector3!
+            //var delta:CFloat = zoomIn ? -(scale-CFloat(1.0))*maxDelta : (CFloat(1.0)-scale)*maxDelta
+            
+            
+            let x = zoomPositionStart?.x
+            let y = zoomPositionStart?.y
+            let z = zoomPositionStart?.z
+            
+            // if playerHand
+            switch orientationMode {
+                
+            case OrientationMode.PlayerHand:
+                delta = -(rotation/CFloat(M_PI))*maxDelta
+                //delta = zoomIn ? -(rotation/CFloat(M_PI))*maxDelta : (rotation/CFloat(M_PI))*maxDelta
+                //delta = zoomIn ? -(scale-CFloat(1.0))*maxDelta : (CFloat(1.0)-scale)*maxDelta
+                zoomPosition = SCNVector3Make( CFloat(x!), CFloat(y!), CFloat(z!+delta) )
+                
+            case OrientationMode.TableOverhead:
+                delta = -(rotation/CFloat(M_PI))*maxDelta
+                //delta = zoomIn ? -(rotation/CFloat(M_PI))*maxDelta : (rotation/CFloat(M_PI))*maxDelta
+                //delta = zoomIn ? -(scale-CFloat(1.0))*maxDelta : (CFloat(1.0)-scale)*maxDelta
+                zoomPosition = SCNVector3Make( CFloat(x!), CFloat(y!+delta), CFloat(z!) )
+                
+            default:
+                println("no camera binding")
+            }
+            
+            println("delta z: \(delta)")
+            
+            positionHandle.position = zoomPosition
+            
+            // if tableOverhead
+            
+        }
+        
+    }
+    
+    func resetZoom() {
+        println("resetZoom")
+        zoomPositionStart = nil
+    }
     
     // attach to player
     

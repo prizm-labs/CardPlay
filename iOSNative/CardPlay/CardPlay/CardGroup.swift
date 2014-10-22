@@ -94,13 +94,18 @@ class CardGroup {
                 
                 var cardNode:CardNode = cards[index] as CardNode
                 
-                //cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
-                
-                cardNode.updateRenderMode(CardNode.RenderModes.FrontAndBack)
                 
                 if duration>0 {
                     SCNTransaction.begin()
                     SCNTransaction.setAnimationDuration(2.0)
+                    SCNTransaction.setCompletionBlock({ () -> Void in
+                        //cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
+                        cardNode.updateRenderMode(CardNode.RenderModes.FrontAndBack)
+
+                    })
+                } else {
+                    //cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
+                    cardNode.updateRenderMode(CardNode.RenderModes.FrontAndBack)
                 }
                 
                 cardNode.setOrientation(self.orientation)

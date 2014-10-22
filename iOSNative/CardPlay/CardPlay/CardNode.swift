@@ -59,6 +59,7 @@ class CardNode {
     }
     
     var isFlipped = false
+    var gesturesDisabled = false
     
     var size:CardSize!
     
@@ -77,8 +78,8 @@ class CardNode {
     var _cardBody:SCNNode!
     
     
-    init(size:CardSize, cardFrontImage:String, cardBackImage:String){
-
+    init(size:CardSize, cardFrontImage:UIImage, cardBackImage:UIImage){
+        
         
         self.size = size
         
@@ -163,7 +164,16 @@ class CardNode {
     
     func flip(duration:Float) {
         
+        if gesturesDisabled {
+            return
+        }
+        
+        gesturesDisabled = true
+            
         println("card:flip, \(rootNode.rotation), \(rootNode.eulerAngles)")
+        
+        //TODO check if render mode should be updated
+        //i.e. should identity be revealed?
         
         if duration>0 {
             SCNTransaction.begin()
@@ -172,6 +182,8 @@ class CardNode {
             SCNTransaction.setCompletionBlock({ () -> Void in
                 var rotationNeutral:CFloat = self.isFlipped ? CFloat(M_PI) : 0
                 self.rootNode.rotation = SCNVector4Make(0, 1.0, 0, rotationNeutral)
+                
+                self.gesturesDisabled = false
             })
         }
         

@@ -30,6 +30,7 @@
 		32A2395219F45EA700A44B61 /* libTestFlight.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 32A2394C19F45EA600A44B61 /* libTestFlight.a */; };
 		32A2395319F45EA700A44B61 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 32A2394D19F45EA600A44B61 /* README.md */; };
 		32A2395419F45EA700A44B61 /* release_notes.md in Sources */ = {isa = PBXBuildFile; fileRef = 32A2394E19F45EA600A44B61 /* release_notes.md */; };
+		32A7CE4B19F7360D00E0BE99 /* card-manifest_full.json in Resources */ = {isa = PBXBuildFile; fileRef = 32A7CE4A19F7360D00E0BE99 /* card-manifest_full.json */; };
 		32DF23F519F254C70025F9A4 /* card-manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 32DF23F419F254C70025F9A4 /* card-manifest.json */; };
 		32DF23F719F255160025F9A4 /* back-default.png in Resources */ = {isa = PBXBuildFile; fileRef = 32DF23F619F255160025F9A4 /* back-default.png */; };
 		32DF243B19F255200025F9A4 /* 2_of_clubs.png in Resources */ = {isa = PBXBuildFile; fileRef = 32DF23F819F255200025F9A4 /* 2_of_clubs.png */; };
@@ -143,6 +144,7 @@
 		32A2394F19F45EA600A44B61 /* TestFlight+AsyncLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TestFlight+AsyncLogging.h"; sourceTree = "<group>"; };
 		32A2395019F45EA600A44B61 /* TestFlight+ManualSessions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TestFlight+ManualSessions.h"; sourceTree = "<group>"; };
 		32A2395119F45EA600A44B61 /* TestFlight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFlight.h; sourceTree = "<group>"; };
+		32A7CE4A19F7360D00E0BE99 /* card-manifest_full.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = "card-manifest_full.json"; path = "assets/json/card-manifest_full.json"; sourceTree = "<group>"; };
 		32DF23F419F254C70025F9A4 /* card-manifest.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = "card-manifest.json"; path = "assets/json/card-manifest.json"; sourceTree = "<group>"; };
 		32DF23F619F255160025F9A4 /* back-default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "back-default.png"; path = "assets/images/deck-default/back/back-default.png"; sourceTree = "<group>"; };
 		32DF23F819F255200025F9A4 /* 2_of_clubs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = 2_of_clubs.png; path = "assets/images/deck-default/front/2_of_clubs.png"; sourceTree = "<group>"; };
@@ -456,6 +458,7 @@
 		32DF23F319F254860025F9A4 /* json */ = {
 			isa = PBXGroup;
 			children = (
+				32A7CE4A19F7360D00E0BE99 /* card-manifest_full.json */,
 				32DF23F419F254C70025F9A4 /* card-manifest.json */,
 			);
 			name = json;
@@ -549,6 +552,7 @@
 				32DF244319F255200025F9A4 /* 4_of_clubs.png in Resources */,
 				32DF246A19F255200025F9A4 /* jack_of_hearts2.png in Resources */,
 				32DF244C19F255200025F9A4 /* 6_of_diamonds.png in Resources */,
+				32A7CE4B19F7360D00E0BE99 /* card-manifest_full.json in Resources */,
 				32DF247D19F255200025F9A4 /* red_joker.png in Resources */,
 				32DF247419F255200025F9A4 /* king_of_spades2.png in Resources */,
 				32DF245519F255200025F9A4 /* 8_of_hearts.png in Resources */,

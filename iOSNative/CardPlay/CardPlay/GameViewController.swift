@@ -87,18 +87,22 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         // x = 0    horizontal parallel to tabletop
         
         let x = acceleration.x
-        let threshold = 0.6
+        let threshold = 0.8
+        
+        var targetOrientationMode:Camera.OrientationMode
         
         if x < threshold && x > -threshold {
             //println("switch to horizontal")
             activePerspective = perspectives[1] as? CameraPerspective
-            camera.orientationMode = Camera.OrientationMode.TableOverhead
-            
+            //camera.orientationMode = Camera.OrientationMode.TableOverhead
+            targetOrientationMode = Camera.OrientationMode.TableOverhead
             
         } else {
             //println("switch to vertical")
             activePerspective = perspectives[0] as? CameraPerspective
-            camera.orientationMode = Camera.OrientationMode.PlayerHand
+            //camera.orientationMode = Camera.OrientationMode.PlayerHand
+            targetOrientationMode = Camera.OrientationMode.PlayerHand
+
         }
         
         
@@ -112,8 +116,17 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             //println("switch to vertical")
         }
         
-        if activePerspective? !== nil {
+        
+        
+        //if activePerspective? !== nil {
+        
+        if camera.orientationMode != targetOrientationMode {
+            
+            println("triggered camera perspective switch")
+            
+            camera.orientationMode = targetOrientationMode
             activePerspective?.transformCamera(self.camera)
+            
             
             // TODO update gestures???
             //updateGestures()
@@ -163,15 +176,29 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         // TODO double tap to flip card over
         //let doubleTapGesture = UITapGestureRecognizer(target: self, action: "handleTap:")
         
-        // pinch gesture
-        // zoom camera in and out
-        let pinchGesture = UIPinchGestureRecognizer(target: self, action: "handlePinch:")
+        
         
         // add a tap gesture recognizer
         let tapGesture = UITapGestureRecognizer(target: self, action: "handleTap:")
         //let tapGesture = UITapGestureRecognizer(target: self, action: "moveCamera")
         
         let panGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
+        
+        let pan1FGesture = UIPanGestureRecognizer(target: self, action: "handlePan1F:")
+        pan1FGesture.minimumNumberOfTouches = 1
+        pan1FGesture.maximumNumberOfTouches = 1
+        
+        let pan3FGesture = UIPanGestureRecognizer(target: self, action: "handlePan3F:")
+        pan3FGesture.minimumNumberOfTouches = 2
+        pan3FGesture.maximumNumberOfTouches = 2
+        
+        
+        // pinch gesture
+        // zoom camera in and out
+        let pinchGesture = UIPinchGestureRecognizer(target: self, action: "handlePinch:")
+        //pinchGesture.requireGestureRecognizerToFail(pan3FGesture)
+        
+        let rotationGesture = UIRotationGestureRecognizer(target: self, action: "handleRotation:")
         
         gestureLibrary = [
             "OnTapHighlightObject": tapGesture,
@@ -181,8 +208,11 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         let gestureRecognizers = NSMutableArray()
         gestureRecognizers.addObject(tapGesture)
-        gestureRecognizers.addObject(panGesture)
-        gestureRecognizers.addObject(pinchGesture)
+        //gestureRecognizers.addObject(panGesture)
+        gestureRecognizers.addObject(pan1FGesture)
+        gestureRecognizers.addObject(pan3FGesture)
+        gestureRecognizers.addObject(rotationGesture)
+        //gestureRecognizers.addObject(pinchGesture)
         
         if let existingGestureRecognizers = sceneView.gestureRecognizers {
             gestureRecognizers.addObjectsFromArray(existingGestureRecognizers)
@@ -521,10 +551,32 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
     }
     
+    func handleRotation(recognizer:UIRotationGestureRecognizer) {
+        
+        println("handleRotation: \(recognizer.rotation) , \(recognizer.velocity)")
+        
+        let rotation:CFloat = CFloat(recognizer.rotation)
+        
+        camera.zoom(rotation)
+        
+        if recognizer.state == UIGestureRecognizerState.Ended {
+            println("rotation Gesture ended")
+            camera.resetZoom()
+        }
+    }
+    
     func handlePinch(recognizer:UIPinchGestureRecognizer) {
         
         println("handlePinch, scale:\(recognizer.scale)")
         
+        let scale:CFloat = CFloat(recognizer.scale)
+        
+        camera.zoom(scale)
+        
+        if recognizer.state == UIGestureRecognizerState.Ended {
+            println("pinch Gesture ended")
+            camera.resetZoom()
+        }
     }
     
     func handleTap(recognizer: UIGestureRecognizer) {
@@ -585,44 +637,36 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     }
     
     func setActiveObject(object:SCNNode) {
-        
-        if activeObject == nil {
+            
+        // if card, bind to root node
+        if object.name == "cardFront" || object.name == "cardBack" {
+        //if object.name == "cardFront" || object.name == "cardBack" || object.name == "cardBody" {
+            // cache object
             
             
+            println("setActiveObject")
             
-            // if card, bind to root node
-            if object.name == "cardFront" || object.name == "cardBack" {
-            //if object.name == "cardFront" || object.name == "cardBack" || object.name == "cardBody" {
-                // cache object
-                
-                
-                println("setActiveObject")
-                
-                var rootNode = object.parentNode as? RootNode
-                activeCard = rootNode?.parentObject
-                
-                activeObject = activeCard?.positionHandle
-                activeObjectOrigin = activeCard?.positionHandle?.position
-                
-                //                    activeObject = object?.parentNode
-                //                    activeObjectOrigin = object?.parentNode?.position
-                
-                //activeObjectOrigin = SCNVector3Make(CFloat(object?.position.x), CFloat(object?.position.y), CFloat(object?.position.z))
-                
-            }
+            var rootNode = object.parentNode as? RootNode
+            activeCard = rootNode?.parentObject
+            
+            activeObject = activeCard?.positionHandle
+            activeObjectOrigin = activeCard?.positionHandle?.position
+            
+            //                    activeObject = object?.parentNode
+            //                    activeObjectOrigin = object?.parentNode?.position
+            
+            //activeObjectOrigin = SCNVector3Make(CFloat(object?.position.x), CFloat(object?.position.y), CFloat(object?.position.z))
             
         }
-        
+
     }
     
-    func handlePan(recognizer:UIPanGestureRecognizer) {
-        //comment for panning
-        //uncomment for tickling
-        //return;
+    func handlePan1F(recognizer:UIPanGestureRecognizer) {
         
         let translation:CGPoint = recognizer.translationInView(self.view)
-        
         println("handlePan \(translation)")
+        
+        //TODO !!! translate object to raycast intersection with object's plane
         
         // Check if touchDownInside card
         
@@ -632,7 +676,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         var object:SCNNode? = getObjectFromHitTest(p)
         
-        if object !== nil {
+        if object !== nil && activeObject == nil {
             println("pan inside object")
             
             setActiveObject(object!)
@@ -664,7 +708,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             //                activeObject?.position.y = CFloat(activeObjectOrigin?.y+translation.y)
             
         }
-
+        
         
         if recognizer.state == UIGestureRecognizerState.Ended {
             println("panGesture ended")
@@ -673,34 +717,76 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             
         }
         
-//        recognizer.view!.center = CGPoint(x:recognizer.view!.center.x + translation.x,
-//            y:recognizer.view!.center.y + translation.y)
-//        recognizer.setTranslation(CGPointZero, inView: self.view)
-//        
-//        if recognizer.state == UIGestureRecognizerState.Ended {
-//            // 1
-//            let velocity = recognizer.velocityInView(self.view)
-//            let magnitude = sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y))
-//            let slideMultiplier = magnitude / 200
-//            println("magnitude: \(magnitude), slideMultiplier: \(slideMultiplier)")
-//            
-//            // 2
-//            let slideFactor = 0.1 * slideMultiplier     //Increase for more of a slide
-//            // 3
-//            var finalPoint = CGPoint(x:recognizer.view!.center.x + (velocity.x * slideFactor),
-//                y:recognizer.view!.center.y + (velocity.y * slideFactor))
-//            // 4
-//            finalPoint.x = min(max(finalPoint.x, 0), self.view.bounds.size.width)
-//            finalPoint.y = min(max(finalPoint.y, 0), self.view.bounds.size.height)
-//            
-//            // 5
-//            UIView.animateWithDuration(Double(slideFactor * 2),
-//                delay: 0,
-//                // 6
-//                options: UIViewAnimationOptions.CurveEaseOut,
-//                animations: {recognizer.view!.center = finalPoint },
-//                completion: nil)
-//        }
+        //        recognizer.view!.center = CGPoint(x:recognizer.view!.center.x + translation.x,
+        //            y:recognizer.view!.center.y + translation.y)
+        //        recognizer.setTranslation(CGPointZero, inView: self.view)
+        //
+        //        if recognizer.state == UIGestureRecognizerState.Ended {
+        //            // 1
+        //            let velocity = recognizer.velocityInView(self.view)
+        //            let magnitude = sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y))
+        //            let slideMultiplier = magnitude / 200
+        //            println("magnitude: \(magnitude), slideMultiplier: \(slideMultiplier)")
+        //
+        //            // 2
+        //            let slideFactor = 0.1 * slideMultiplier     //Increase for more of a slide
+        //            // 3
+        //            var finalPoint = CGPoint(x:recognizer.view!.center.x + (velocity.x * slideFactor),
+        //                y:recognizer.view!.center.y + (velocity.y * slideFactor))
+        //            // 4
+        //            finalPoint.x = min(max(finalPoint.x, 0), self.view.bounds.size.width)
+        //            finalPoint.y = min(max(finalPoint.y, 0), self.view.bounds.size.height)
+        //
+        //            // 5
+        //            UIView.animateWithDuration(Double(slideFactor * 2),
+        //                delay: 0,
+        //                // 6
+        //                options: UIViewAnimationOptions.CurveEaseOut,
+        //                animations: {recognizer.view!.center = finalPoint },
+        //                completion: nil)
+        //        }
+
+    }
+    
+    func handlePan3F(recognizer:UIPanGestureRecognizer) {
+        
+        let translation:CGPoint = recognizer.translationInView(self.view)
+        println("handlePan 3F\(translation)")
+        
+        camera.pan(translation)
+
+        if recognizer.state == UIGestureRecognizerState.Ended {
+            println("pan 3F ended")
+            camera.resetPan()
+        }
+        
+    }
+    
+    func handlePan(recognizer:UIPanGestureRecognizer) {
+        //comment for panning
+        //uncomment for tickling
+        //return;
+        
+        let fingers = recognizer.numberOfTouches()
+        
+        switch fingers {
+        
+        case 1:
+            //recognizer.enabled = true
+            handlePan1F(recognizer)
+            
+        case 3:
+            //recognizer.enabled = true
+            handlePan3F(recognizer)
+            
+        case 2:
+            recognizer.enabled = false
+            recognizer.enabled = true
+        
+        default:
+            println("no pan handler")
+        }
+        
     }
     
     func getObjectFromHitTest(location:CGPoint) ->SCNNode? {
