@@ -7,10 +7,17 @@
 //
 
 import Foundation
+import SpriteKit
 import SceneKit
 import UIKit
 
 class PlayPoint {
+    
+    var rootNode:SCNNode!
+    var indicatorNode:SCNNode!
+    var highlightNode:SCNNode!
+    
+    let ORB_RADIUS:CGFloat = CGFloat(10.0)
     
     // animate creation
     // set detection radius
@@ -33,27 +40,12 @@ class PlayPoint {
     
     init(position:SCNVector3, orientation:SCNVector3){
         
+        rootNode = SCNNode()
+        
+        indicatorNode = SCNNode(geometry: SCNSphere(radius: ORB_RADIUS))
+        rootNode.addChildNode(indicatorNode)
         
     }
-    
-}
-
-class ActiveEdge {
-    
-    // camera 
-    
-    // position on screen
-    
-    // PlayPoint linked
-    
-    // Ghost Action derived
-    
-}
-
-class ActiveEdgeGroup {
-    
-    // activate 
-    // deactivate
     
 }
 
