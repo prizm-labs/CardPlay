@@ -48,7 +48,7 @@ class Deck {
             
             
             //var cardNode = CardNode(size:size, cardFrontImage: imageFront!, cardBackImage: imageBack!)
-            var cardNode = CardNode(size:size, cardFrontImage: imageFront, cardBackImage: imageBack)
+            var cardNode = CardNode(size:size, cardFrontImage: imageFront!, cardBackImage: imageBack)
             
             //cardNode.rootNode.position = self.origin
             cardNode.positionHandle.position = self.origin

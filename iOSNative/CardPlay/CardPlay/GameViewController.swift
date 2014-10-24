@@ -15,7 +15,7 @@ import CoreMotion
 
 import Foundation
 
-class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysicsContactDelegate {
+class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysicsContactDelegate  {
     
     let ORB_RADIUS = CGFloat(15)
     let CARD_WIDTH = CGFloat(500)
@@ -29,11 +29,11 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     let TABLE_DEPTH = CGFloat(50.0)
     
     var handPosition:SCNVector3!
-    var handCards:NSMutableArray = []
-    var deckCards:NSMutableArray = []
+    var handCards:NSMutableArray = NSMutableArray()
+    var deckCards:NSMutableArray = NSMutableArray()
     
     var cardAtlas:[String: String]!
-    var cardManifest:[[String]] = []
+    var cardManifest:[[String]] = [[String]]()
     
     var _scene:SCNScene!
     
@@ -42,7 +42,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     var _cameraOrientation:SCNNode!
     
     var camera:Camera!
-    var perspectives:NSMutableArray = []
+    var perspectives:NSMutableArray = NSMutableArray()
     
     // Gestures
     var gestureLibrary:[String:UIGestureRecognizer]!
@@ -59,9 +59,9 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     var _playerOrb:SCNNode!
     
-    var cardNodes:[CardNode] = []
+    var cardNodes:[CardNode] = [CardNode]()
     
-    var players:NSMutableArray = []
+    var players:NSMutableArray = NSMutableArray()
     
     
     var activeObject:SCNNode?
@@ -77,9 +77,12 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         setup()
     }
     
-    func parseAcceleration(acceleration:CMAcceleration){
+    func parseAcceleration(data:CMAccelerometerData){
+        
+        let acceleration = data.acceleration
         
         //println("parseAcceleration x:\(acceleration.x), y:\(acceleration.y), z:\(acceleration.z)")
+
         var activePerspective:CameraPerspective?
         
         // landscape
@@ -87,7 +90,9 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         // x = 0    horizontal parallel to tabletop
         
         let x = acceleration.x
-        let threshold = 0.8
+        //let threshold = 0.8
+        let threshold = 0.6
+        let buffer = 0.2
         
         var targetOrientationMode:Camera.OrientationMode
         
@@ -120,13 +125,22 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         //if activePerspective? !== nil {
         
-        if camera.orientationMode != targetOrientationMode {
+        if camera.orientationMode != targetOrientationMode && camera.willChangePerspective {
             
-            println("triggered camera perspective switch")
+//            var cameraPanGesture = gestureLibrary["OnPanTranslateCamera"] as UIGestureRecognizer?
+//            cameraPanGesture?.enabled = false
+//            cameraPanGesture?.enabled = true
+//            
+//            println("trigger camera perspective switch")
             
-            camera.orientationMode = targetOrientationMode
-            activePerspective?.transformCamera(self.camera)
+            //camera.orientationMode = targetOrientationMode
+            //activePerspective?.transformCamera(self.camera)
             
+            let position = activePerspective?.position
+            let orientation = activePerspective?.orientation
+            
+            camera.transform(position!, orientation: orientation!, mode:targetOrientationMode, duration: 0.3)
+            //camera.transform(position!, orientation: orientation!, mode:targetOrientationMode, duration: 0)
             
             // TODO update gestures???
             //updateGestures()
@@ -140,7 +154,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         motionManager = CMMotionManager()
         motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: { (accelerometerData, error) -> Void in
-            self.parseAcceleration(accelerometerData.acceleration)
+            self.parseAcceleration(accelerometerData)
         })
         
 //        if (motionManager.accelerometerAvailable) {
@@ -182,6 +196,10 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         let tapGesture = UITapGestureRecognizer(target: self, action: "handleTap:")
         //let tapGesture = UITapGestureRecognizer(target: self, action: "moveCamera")
         
+        let tap1F3TGesture = UITapGestureRecognizer(target: self, action: "handleTap1F3T:")
+        tap1F3TGesture.numberOfTapsRequired = 2
+        tap1F3TGesture.numberOfTouchesRequired = 1
+        
         let panGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
         
         let pan1FGesture = UIPanGestureRecognizer(target: self, action: "handlePan1F:")
@@ -191,6 +209,10 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         let pan3FGesture = UIPanGestureRecognizer(target: self, action: "handlePan3F:")
         pan3FGesture.minimumNumberOfTouches = 2
         pan3FGesture.maximumNumberOfTouches = 2
+        
+        let swipeGesture = UISwipeGestureRecognizer(target: self, action: "handleSwipe:")
+        
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: "handleLongPress:")
         
         
         // pinch gesture
@@ -202,17 +224,21 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         gestureLibrary = [
             "OnTapHighlightObject": tapGesture,
-            "OnPanTranslateObject":panGesture,
+            "OnPanTranslateCamera":pan3FGesture,
             "OnPinchZoomCamera":pinchGesture
         ]
         
         let gestureRecognizers = NSMutableArray()
-        gestureRecognizers.addObject(tapGesture)
+        //gestureRecognizers.addObject(tapGesture)
         //gestureRecognizers.addObject(panGesture)
         gestureRecognizers.addObject(pan1FGesture)
         gestureRecognizers.addObject(pan3FGesture)
-        gestureRecognizers.addObject(rotationGesture)
+        //gestureRecognizers.addObject(rotationGesture)
         //gestureRecognizers.addObject(pinchGesture)
+        
+        gestureRecognizers.addObject(tap1F3TGesture)
+//        gestureRecognizers.addObject(longPressGesture)
+//        gestureRecognizers.addObject(swipeGesture)
         
         if let existingGestureRecognizers = sceneView.gestureRecognizers {
             gestureRecognizers.addObjectsFromArray(existingGestureRecognizers)
@@ -270,11 +296,11 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         println("sprite manifest path \(filePath)")
         
-        let jsonData = NSData.dataWithContentsOfFile(filePath!, options: NSDataReadingOptions.DataReadingMappedIfSafe, error: nil)
+        let jsonData = NSData(contentsOfFile:filePath!, options: NSDataReadingOptions.DataReadingMappedIfSafe, error: nil)
         
         println("sprite manifest \(jsonData)")
         
-        let jsonDict = NSJSONSerialization.JSONObjectWithData(jsonData, options: nil, error: &error) as NSDictionary
+        let jsonDict = NSJSONSerialization.JSONObjectWithData(jsonData!, options: nil, error: &error) as NSDictionary
         
         println("sprite manifest \(jsonDict)")
         
@@ -333,9 +359,13 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         _scene = SCNScene()
         
+        setupPlayerCamera()
+        // Accelerometer bound to... camera?
+        setupAccelerometer()
         setupEnvironment()
         setupSceneElements()
         setupInitialLighting()
+        
         
         //        // create a new scene
         //        let scene = SCNScene(named: "art.scnassets/ship.dae")
@@ -361,20 +391,15 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         var playerDefaultPerspective = CameraPerspective(orientation: SCNVector3Make(-CFloat(M_PI * 0.15), 0, 0), position: SCNVector3Make(0,150,Float(TABLE_RADIUS*0.75)))
         
         // position over table
-        var tableDefaultPerspective = CameraPerspective(orientation: SCNVector3Make(-CFloat(M_PI_2),0,0), position: SCNVector3Make(0, 250, 0))
+        var tableDefaultPerspective = CameraPerspective(orientation: SCNVector3Make(-CFloat(M_PI_2),0,0), position: SCNVector3Make(0, 400, 0))
         
         self.perspectives.addObject(playerDefaultPerspective)
         self.perspectives.addObject(tableDefaultPerspective)
         
         //camera.transform(SCNVector3Make(0,150,Float(TABLE_RADIUS*0.75)), orientation: SCNVector3Make(-CFloat(M_PI * 0.15), 0, 0))
-        
-        // Accelerometer bound to... camera?
-        setupAccelerometer()
     }
     
     func setupEnvironment() {
-
-        setupPlayerCamera()
         
         _ambientLightNode = SCNNode()
         
@@ -551,7 +576,22 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
     }
     
+    //PRAGMA MARK GestureRecognizers
+    
+    func handleLongPress(recognizer:UILongPressGestureRecognizer) {
+        println("handleLongPress")
+        
+        // long press on card, change to activation mode
+        
+        // single tap on original activated card, deactivate card
+    }
+    
+    func handleSwipe(recognizer:UISwipeGestureRecognizer) {
+        println("handleSwipe")
+    }
+    
     func handleRotation(recognizer:UIRotationGestureRecognizer) {
+        
         
         println("handleRotation: \(recognizer.rotation) , \(recognizer.velocity)")
         
@@ -578,6 +618,40 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             camera.resetZoom()
         }
     }
+    
+    func handleTap1F3T(recognizer: UIGestureRecognizer) {
+        
+        println("handleTap 1F 3T")
+        // retrieve the SCNView
+        let scnView = self.view as SCNView
+        
+        
+        // check what nodes are tapped
+        let p = recognizer.locationInView(scnView)
+        //        if let hitResults = scnView.hitTest(p, options: nil) {
+        //            highlightObject(hitResults)
+        //        }
+        
+        println("point \(p)")
+        
+        //https://developer.apple.com/library/mac/documentation/SceneKit/Reference/SCNHitTestResult_Class/index.html#//apple_ref/occ/cl/SCNHitTestResult
+        
+        let result:SCNHitTestResult? = getResultFromHitTest(p, nodeName: "table")
+        
+        if result != nil {
+            println("world coordinates: \(result?.worldCoordinates)")
+            
+            let position:SCNVector3? = result?.worldCoordinates
+            
+            var playPoint = SCNNode(geometry: SCNSphere(radius: ORB_RADIUS))
+            playPoint.position = position!
+            _scene.rootNode.addChildNode(playPoint)
+            
+            //TODO create active edge linked to play point
+        }
+        
+    }
+    
     
     func handleTap(recognizer: UIGestureRecognizer) {
         // retrieve the SCNView
@@ -666,6 +740,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         let translation:CGPoint = recognizer.translationInView(self.view)
         println("handlePan \(translation)")
         
+        camera.willChangePerspective = false
+        
         //TODO !!! translate object to raycast intersection with object's plane
         
         // Check if touchDownInside card
@@ -713,6 +789,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         if recognizer.state == UIGestureRecognizerState.Ended {
             println("panGesture ended")
             
+            camera.willChangePerspective = true
             releaseActiveObject()
             
         }
@@ -753,11 +830,15 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         let translation:CGPoint = recognizer.translationInView(self.view)
         println("handlePan 3F\(translation)")
         
+        // prevent camera transition while gesture updating
+        camera.willChangePerspective = false
+        
         camera.pan(translation)
 
         if recognizer.state == UIGestureRecognizerState.Ended {
             println("pan 3F ended")
             camera.resetPan()
+            camera.willChangePerspective = true
         }
         
     }
@@ -787,6 +868,32 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             println("no pan handler")
         }
         
+    }
+    
+    func getResultFromHitTest(location:CGPoint, nodeName:String) ->SCNHitTestResult? {
+        
+        println("getNodeFromHitTest")
+        
+        var match:SCNHitTestResult? = nil
+        let sceneView = self.view as SCNView
+        
+        let hitResults:NSArray = sceneView.hitTest(location, options: nil)!
+        //println("hit objects: \(hitResults)")
+        
+        if hitResults.count>0 {
+            
+            for hitResult in hitResults {
+                
+                let node:SCNNode = hitResult.node! as SCNNode
+                
+                if node.name==nodeName {
+                    match = hitResult as? SCNHitTestResult
+                }
+            }
+            
+        }
+        
+        return match
     }
     
     func getObjectFromHitTest(location:CGPoint) ->SCNNode? {
@@ -864,9 +971,10 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     override func supportedInterfaceOrientations() -> Int {
         if UIDevice.currentDevice().userInterfaceIdiom == .Phone {
-            return Int(UIInterfaceOrientationMask.AllButUpsideDown.toRaw())
+            //return Int(UIInterfaceOrientationMask.AllButUpsideDown.rawValue)
+            return Int(UIInterfaceOrientationMask.LandscapeLeft.rawValue) | Int(UIInterfaceOrientationMask.LandscapeRight.rawValue)
         } else {
-            return Int(UIInterfaceOrientationMask.All.toRaw())
+            return Int(UIInterfaceOrientationMask.All.rawValue)
         }
     }
     

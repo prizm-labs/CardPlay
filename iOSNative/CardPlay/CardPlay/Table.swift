@@ -47,6 +47,7 @@ class Table {
         tableGeometry.firstMaterial = tableMaterial
         
         tableNode = SCNNode(geometry: tableGeometry)
+        tableNode.name = "table"
         tableNode.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Static, shape: nil)
         tableNode.physicsBody?.restitution = 1.0
         tableNode.eulerAngles = SCNVector3Make(CFloat(M_PI/2), 0, 0)

@@ -13,10 +13,17 @@ import UIKit
 class CameraPerspective {
     var orientation:SCNVector3!
     var position:SCNVector3!
-    //var orientationMode:Camerea
+    
+    var minX:CFloat!
+    var maxX:CFloat!
+    var minY:CFloat!
+    var maxY:CFloat!
+    var minZ:CFloat!
+    var maxZ:CFloat!
+    
     
     var zoomPositionStart:SCNVector3?
-
+    var panPositionStart:SCNVector3?
     
 
     func initRoot(orientation:SCNVector3, position:SCNVector3) {
@@ -43,7 +50,18 @@ class CameraPerspective {
     }
     
     
-    func cachePosition(){
+    func setLimits(x:CFloat,y:CFloat,z:CFloat,X:CFloat,Y:CFloat,Z:CFloat) {
+        
+        minX = x
+        minY = y
+        minZ = z
+        maxX = X
+        maxY = Y
+        maxZ = Z
+        
+    }
+    
+    func cachePosition(position:SCNVector3){
         
         // save position relative to perspective
         
@@ -53,7 +71,27 @@ class CameraPerspective {
 
 class Camera {
     
+    // TODO set camera limits based on table and/or players
+    // TABLE_RADIUS 600
+    
+//    var playerDefaultPerspective = CameraPerspective(orientation: SCNVector3Make(-CFloat(M_PI * 0.15), 0, 0), position: SCNVector3Make(0,150,Float(TABLE_RADIUS*0.75)))
+//    
+//    // position over table
+//    var tableDefaultPerspective = CameraPerspective(orientation: SCNVector3Make(-CFloat(M_PI_2),0,0), position: SCNVector3Make(0, 250, 0))
+    
+    let MAX_X:CFloat = CFloat(150)
+    let MAX_Y:CFloat = CFloat(400)
+    let MAX_Z:CFloat = CFloat(450)
+    
+    let MIN_X:CFloat = CFloat(-150)
+    let MIN_Y:CFloat = CFloat(100)
+    let MIN_Z:CFloat = CFloat(-450)
+    
+    
+    
+    
     var isInteractive = true
+    var willChangePerspective = true
     
     var perspectives:NSMutableArray = []
     
@@ -119,30 +157,35 @@ class Camera {
         //
     }
     
-    func transform(position:SCNVector3, orientation:SCNVector3, duration:Float) {
+    func transform(position:SCNVector3, orientation:SCNVector3, mode:OrientationMode, duration:Float) {
         
-        if (!isInteractive) {
+        if (!willChangePerspective) {
             return
         }
         
-        isInteractive = false
+        willChangePerspective = false
         
-        self.position = position
-        self.orientation = orientation
+        self.orientationMode = mode
         
-        //if duration>0 {
-        SCNTransaction.begin()
-        SCNTransaction.setAnimationDuration(CFTimeInterval(duration))
+        //self.position = position
+        //self.orientation = orientation
         
-        SCNTransaction.setCompletionBlock({ () -> Void in
-            self.isInteractive = true
-        })
-        //}
+        if duration>0 {
+            SCNTransaction.begin()
+            SCNTransaction.setAnimationDuration(CFTimeInterval(duration))
+        }
         
-        positionHandle.position = self.position
-        orientationHandle.eulerAngles = self.orientation
+        positionHandle.position = position
+        orientationHandle.eulerAngles = orientation
         
-        SCNTransaction.commit()
+        if duration>0 {
+            SCNTransaction.setCompletionBlock({ () -> Void in
+                self.willChangePerspective = true
+            })
+            SCNTransaction.commit()
+        } else {
+            self.willChangePerspective = true
+        }
     }
     
     func lookAtNode(target:SCNNode) {
@@ -161,17 +204,81 @@ class Camera {
             panPositionStart = SCNVector3Make(positionHandle.position.x,positionHandle.position.y,positionHandle.position.z)
         } else {
             
+            
+            let inputRatio:CFloat = CFloat(1.5)
+            
+            let deltaA:CFloat = CFloat(translation.x)*inputRatio
+            let deltaB:CFloat = CFloat(translation.y)*inputRatio
+            
             let x = panPositionStart?.x
             let y = panPositionStart?.y
             let z = panPositionStart?.z
             
+            //println("original: \(x), \(y), \(z)")
+            
+            let computedX = x! - deltaA
+            let computedY = y! + deltaB
+            let computedZ = z! - deltaB
+ 
+            
+            
+            // limit camera movement
+            var newX:CFloat = CFloat(computedX)
+            var newY:CFloat = CFloat(computedY)
+            var newZ:CFloat = CFloat(computedZ)
+            
+            if newX > MAX_X {
+                newX = MAX_X
+            } else if newX < MIN_X {
+                newX = MIN_X
+            }
+            
+            if newY > MAX_Y {
+                newY = MAX_Y
+            } else if newY < MIN_Y {
+                newY = MIN_Y
+            }
+            
+            if newZ > MAX_Z {
+                newZ = MAX_Z
+            } else if newZ < MIN_Z {
+                newZ = MIN_Z
+            }
+            
+            
+//            let newY:CFloat = CFloat(computedY) > y! ? min(computedY,MAX_Y) : max(computedY, MIN_Y)
+//            let newZ:CFloat = CFloat(computedZ) > z! ? min(computedZ,MAX_Z) : max(computedZ, MIN_Z)
+            
+            
+//            let newX:CFloat = CFloat(computedX)
+//            let newY:CFloat = CFloat(computedY)
+//            let newZ:CFloat = CFloat(computedZ)
+            
             switch orientationMode {
                 
             case .TableOverhead:
-                positionHandle.position = SCNVector3Make(x! - CFloat(translation.x), y!, z! + CFloat(translation.y))
+//                
+//                println("TableOverhead")
+//                println("computed: \(computedX), \(y!), \(computedZ)")
+//                println("new: \(newX), \(y!), \(newZ)")
+                
+                // natural motion
+                positionHandle.position = SCNVector3Make(newX, y!, newZ)
+                //positionHandle.position = SCNVector3Make(x! - deltaA, y!, z! - deltaB)
+                
+                //positionHandle.position = SCNVector3Make(x! + CFloat(translation.x), y!, z! + CFloat(translation.y))
                 
             case .PlayerHand:
-                positionHandle.position = SCNVector3Make(x! - CFloat(translation.x), y! - CFloat(translation.y), z!)
+                
+//                println("PlayerHand")
+//                println("computed: \(computedX), \(computedY), \(z!)")
+//                println("new: \(newX), \(newY), \(z!)")
+//                
+                // natural motion
+                positionHandle.position = SCNVector3Make(newX, newY, z!)
+                //positionHandle.position = SCNVector3Make(x! - deltaA, y! + deltaB, z!)
+                
+                //positionHandle.position = SCNVector3Make(x! + CFloat(translation.x), y! - CFloat(translation.y), z!)
                 
             default:
                 println()
@@ -196,6 +303,8 @@ class Camera {
             zoomPositionStart = SCNVector3Make(positionHandle.position.x, positionHandle.position.y, positionHandle.position.z)
         } else {
             
+            let inputRatio:CFloat = CFloat(3.5)
+            
             let zoomIn = rotation > 0
             //let zoomIn = scale > 1 // zoom mapped to pinch scale
             
@@ -213,13 +322,13 @@ class Camera {
             switch orientationMode {
                 
             case OrientationMode.PlayerHand:
-                delta = -(rotation/CFloat(M_PI))*maxDelta
+                delta = -(rotation*inputRatio/CFloat(M_PI))*maxDelta
                 //delta = zoomIn ? -(rotation/CFloat(M_PI))*maxDelta : (rotation/CFloat(M_PI))*maxDelta
                 //delta = zoomIn ? -(scale-CFloat(1.0))*maxDelta : (CFloat(1.0)-scale)*maxDelta
                 zoomPosition = SCNVector3Make( CFloat(x!), CFloat(y!), CFloat(z!+delta) )
                 
             case OrientationMode.TableOverhead:
-                delta = -(rotation/CFloat(M_PI))*maxDelta
+                delta = -(rotation*inputRatio/CFloat(M_PI))*maxDelta
                 //delta = zoomIn ? -(rotation/CFloat(M_PI))*maxDelta : (rotation/CFloat(M_PI))*maxDelta
                 //delta = zoomIn ? -(scale-CFloat(1.0))*maxDelta : (CFloat(1.0)-scale)*maxDelta
                 zoomPosition = SCNVector3Make( CFloat(x!), CFloat(y!+delta), CFloat(z!) )
