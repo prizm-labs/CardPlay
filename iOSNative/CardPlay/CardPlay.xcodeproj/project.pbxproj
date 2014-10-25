@@ -19,6 +19,7 @@
 		04FBB73219F060F700E763FC /* MultipeerConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04FBB73119F060F700E763FC /* MultipeerConnection.swift */; };
 		04FBB73419F0616900E763FC /* LobbyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04FBB73319F0616900E763FC /* LobbyViewController.swift */; };
 		3204915219F9FE9E00D6C6B5 /* ActiveEdgeScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3204915119F9FE9E00D6C6B5 /* ActiveEdgeScene.swift */; };
+		3204915519FB0CF000D6C6B5 /* HitTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3204915419FB0CF000D6C6B5 /* HitTest.swift */; };
 		3252F23C19ECD92E00DFB721 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3252F23B19ECD92E00DFB721 /* AppDelegate.swift */; };
 		3252F23E19ECD92E00DFB721 /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = 3252F23D19ECD92E00DFB721 /* art.scnassets */; };
 		3252F24019ECD92E00DFB721 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3252F23F19ECD92E00DFB721 /* GameViewController.swift */; };
@@ -128,6 +129,7 @@
 		04FBB73119F060F700E763FC /* MultipeerConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultipeerConnection.swift; sourceTree = "<group>"; };
 		04FBB73319F0616900E763FC /* LobbyViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LobbyViewController.swift; sourceTree = "<group>"; };
 		3204915119F9FE9E00D6C6B5 /* ActiveEdgeScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActiveEdgeScene.swift; sourceTree = "<group>"; };
+		3204915419FB0CF000D6C6B5 /* HitTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HitTest.swift; sourceTree = "<group>"; };
 		3252F23619ECD92E00DFB721 /* CardPlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CardPlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3252F23A19ECD92E00DFB721 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3252F23B19ECD92E00DFB721 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -263,6 +265,7 @@
 				0424D3E419F0C91A004A80FF /* CardDeck.swift */,
 				04DC984319F19CD600D69596 /* GameWorld.swift */,
 				32A7CE4C19F9AB4400E0BE99 /* PlayPoint.swift */,
+				3204915419FB0CF000D6C6B5 /* HitTest.swift */,
 			);
 			name = "3D World";
 			sourceTree = "<group>";
@@ -666,6 +669,7 @@
 				0424D3E319F064A3004A80FF /* PlayerMenuViewController.swift in Sources */,
 				04FBB72C19EF8D1B00E763FC /* CardGroup.swift in Sources */,
 				3252F24019ECD92E00DFB721 /* GameViewController.swift in Sources */,
+				3204915519FB0CF000D6C6B5 /* HitTest.swift in Sources */,
 				04DC984819F1AB5F00D69596 /* StoreViewController.swift in Sources */,
 				04DC984619F1A9CD00D69596 /* CloudConnection.swift in Sources */,
 				32A2395319F45EA700A44B61 /* README.md in Sources */,

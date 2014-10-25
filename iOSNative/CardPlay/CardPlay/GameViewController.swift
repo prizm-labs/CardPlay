@@ -15,6 +15,7 @@ import CoreMotion
 
 import Foundation
 
+
 class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysicsContactDelegate  {
     
     let ORB_RADIUS = CGFloat(15)
@@ -34,6 +35,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     var cardAtlas:[String: String]!
     var cardManifest:[[String]] = [[String]]()
+    
+    var _hitTest:HitTest!
     
     var _scene:SCNScene!
     
@@ -185,7 +188,14 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     func setupGestures() {
         
-        let sceneView = view as SCNView
+        
+        let sceneView = self.view as SCNView
+        
+        
+        
+        // HitTest manager
+        _hitTest = HitTest(sceneView:sceneView)
+        
         
         // TODO double tap to flip card over
         //let doubleTapGesture = UITapGestureRecognizer(target: self, action: "handleTap:")
@@ -400,6 +410,91 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     }
     
     func setupEnvironment() {
+
+        
+        // Floor
+        var floor = SCNFloor()
+        floor.reflectionFalloffEnd = 0
+        floor.reflectivity = 0
+        
+        var tableMaterial = SCNMaterial()
+        //tableMaterial.diffuse.contents =  "green-felt.jpg"
+        tableMaterial.diffuse.contents = UIImage(named:"green-felt.jpg")
+        tableMaterial.locksAmbientWithDiffuse = true
+        tableMaterial.diffuse.wrapS = SCNWrapMode.Repeat
+        tableMaterial.diffuse.wrapT = SCNWrapMode.Repeat
+        tableMaterial.diffuse.mipFilter = SCNFilterMode.Linear
+        
+        floor.firstMaterial = tableMaterial
+        
+        _floorNode = SCNNode()
+        _floorNode.geometry = floor
+        _floorNode.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Static, shape: nil)
+        _floorNode.physicsBody?.restitution = 1.0
+        
+        _floorNode.position.y -= 200.0
+        
+        _scene.rootNode.addChildNode(_floorNode)
+        
+        var table = Table(radius: 600.0, depth: 50.0)
+        
+        _scene.rootNode.addChildNode(table.rootNode)
+        
+        
+        // Create hidden wall planes for each player's hand 
+        
+    }
+    
+    func setupSceneElements() {
+        
+        //        _playerOrb = SCNNode(geometry: SCNSphere(radius: ORB_RADIUS))
+        //        //_playerOrb.geometry.firstMaterial.diffuse.contents = SKColor(red: 1.0, green: 0, blue: 0, alpha: 1.0)
+        //        _playerOrb.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Dynamic, shape: nil)
+        //        _playerOrb.physicsBody?.restitution = 0.9
+        //
+        //        _playerOrb.position = SCNVector3Make(0, 0, 0)
+        //        _playerOrb.position.y += CFloat(ORB_RADIUS * 8)
+        //
+        //        _scene.rootNode.addChildNode(_playerOrb)
+        
+        
+        //        var cardNode = createCard("ace_of_spades.png", cardBackImage:"back-default.png")
+        //        cardNode.position = SCNVector3Make(0, 0, 0)
+        //        cardNode.position.y += 50
+        //        _scene.rootNode.addChildNode(cardNode)
+        
+        //cardNode.runAction(SCNAction.repeatActionForever(SCNAction.rotateByX(0, y: CGFloat(M_PI), z: 0, duration: 4)))
+        
+        
+        // Deck of cards
+        var size = CardSize(height: CARD_HEIGHT, width: CARD_WIDTH, cornerRadius: CARD_RADIUS, thickness: CARD_DEPTH)
+        size.scale(CARD_RESIZE_FACTOR)
+        
+        var deck = Deck(atlas:cardAtlas,manifest:cardManifest,size:size,origin:SCNVector3Make(0, 0, 0))
+        // Deck default group as stack
+        var deckStackGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Stack, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 0, 0))
+        
+        deck.setGroup(deckStackGroup)
+        deck.spawn(_scene.rootNode)
+        
+        
+        // Players
+        var player = Player(origin: SCNVector3Make(0, 50, Float(TABLE_RADIUS*0.5)))
+        
+        _scene.rootNode.addChildNode(player.rootNode)
+        
+        // Draw card
+        player.drawCardFromGroup(deck.cards[0] as CardNode, group: deck.group)
+        
+        // general table surface
+        var tableSurfaceGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 0, 0))
+        
+        // hover group
+        var tableHoverGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 150.0, 0))
+        
+    }
+    
+    func setupInitialLighting() {
         
         _ambientLightNode = SCNNode()
         
@@ -430,85 +525,6 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         _spotlightNode.light = spotlight
         _cameraNode.addChildNode(_spotlightParentNode)
         _spotlightParentNode.addChildNode(_spotlightNode)
-        
-        
-        // Floor
-        var floor = SCNFloor()
-        floor.reflectionFalloffEnd = 0
-        floor.reflectivity = 0
-        
-        var tableMaterial = SCNMaterial()
-        //tableMaterial.diffuse.contents =  "green-felt.jpg"
-        tableMaterial.diffuse.contents = UIImage(named:"green-felt.jpg")
-        tableMaterial.locksAmbientWithDiffuse = true
-        tableMaterial.diffuse.wrapS = SCNWrapMode.Repeat
-        tableMaterial.diffuse.wrapT = SCNWrapMode.Repeat
-        tableMaterial.diffuse.mipFilter = SCNFilterMode.Linear
-        
-        floor.firstMaterial = tableMaterial
-        
-        _floorNode = SCNNode()
-        _floorNode.geometry = floor
-        _floorNode.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Static, shape: nil)
-        _floorNode.physicsBody?.restitution = 1.0
-        
-        _floorNode.position.y -= 200.0
-        
-        _scene.rootNode.addChildNode(_floorNode)
-        
-        var table = Table(radius: 600.0, depth: 50.0)
-        
-        _scene.rootNode.addChildNode(table.rootNode)
-    }
-    
-    func setupSceneElements() {
-        
-    }
-    
-    func setupInitialLighting() {
-        
-//        _playerOrb = SCNNode(geometry: SCNSphere(radius: ORB_RADIUS))
-//        //_playerOrb.geometry.firstMaterial.diffuse.contents = SKColor(red: 1.0, green: 0, blue: 0, alpha: 1.0)
-//        _playerOrb.physicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.Dynamic, shape: nil)
-//        _playerOrb.physicsBody?.restitution = 0.9
-//        
-//        _playerOrb.position = SCNVector3Make(0, 0, 0)
-//        _playerOrb.position.y += CFloat(ORB_RADIUS * 8)
-//        
-//        _scene.rootNode.addChildNode(_playerOrb)
-        
-        
-//        var cardNode = createCard("ace_of_spades.png", cardBackImage:"back-default.png")
-//        cardNode.position = SCNVector3Make(0, 0, 0)
-//        cardNode.position.y += 50
-//        _scene.rootNode.addChildNode(cardNode)
-        
-        //cardNode.runAction(SCNAction.repeatActionForever(SCNAction.rotateByX(0, y: CGFloat(M_PI), z: 0, duration: 4)))
-
-        
-        // Deck of cards
-        var size = CardSize(height: CARD_HEIGHT, width: CARD_WIDTH, cornerRadius: CARD_RADIUS, thickness: CARD_DEPTH)
-        size.scale(CARD_RESIZE_FACTOR)
-
-        var deck = Deck(atlas:cardAtlas,manifest:cardManifest,size:size,origin:SCNVector3Make(0, 0, 0))
-        // Deck default group as stack
-        var deckStackGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Stack, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 0, 0))
-        
-        deck.setGroup(deckStackGroup)
-        deck.spawn(_scene.rootNode)
-
-        
-        // Players
-        var player = Player(origin: SCNVector3Make(0, 50, Float(TABLE_RADIUS*0.5)))
-        
-        // Draw card
-        player.drawCardFromGroup(deck.cards[0] as CardNode, group: deck.group)
-        
-        // general table surface
-        var tableSurfaceGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 0, 0))
-        
-        // hover group
-        var tableHoverGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 150.0, 0))
         
         
     }
@@ -742,13 +758,18 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         camera.willChangePerspective = false
         
-        //TODO !!! translate object to raycast intersection with object's plane
-        
-        // Check if touchDownInside card
-        
         let sceneView = self.view as SCNView
         // check what nodes are tapped
         let p = recognizer.locationInView(sceneView)
+        
+        //TODO !!! translate object to raycast intersection with object's plane
+        if camera.orientationMode == Camera.OrientationMode.PlayerHand {
+            
+        }
+        
+        // Check if touchDownInside card
+        
+
         
         var object:SCNNode? = getObjectFromHitTest(p)
         
@@ -766,17 +787,40 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             let y = activeObjectOrigin?.y
             let z = activeObjectOrigin?.z
             
+            var newPosition:SCNVector3?
+            var result:SCNHitTestResult?
+            
             switch camera.orientationMode {
                 
             case .TableOverhead:
-                activeObject?.position = SCNVector3Make(x! + CFloat(translation.x), y!, z! + CFloat(translation.y))
+                //activeObject?.position = SCNVector3Make(x! + CFloat(translation.x), y!, z! + CFloat(translation.y))
+                
+                result = _hitTest.getResultFromHitTest(p, nodeName: "table", searchHiddenNodes: true)
+                
+                if result != nil {
+                    newPosition = result?.worldCoordinates
+                    activeObject?.position = newPosition!
+                    //TODO create active edge linked to play point
+                }
                 
             case .PlayerHand:
-                activeObject?.position = SCNVector3Make(x! + CFloat(translation.x), y! - CFloat(translation.y), z!)
+                
+                //println("pan in hand perspective")
+                
+                result = _hitTest.getResultFromHitTest(p, nodeName: "playerHandPlane", searchHiddenNodes: true)
+                
+                if result != nil {
+                    newPosition = result?.worldCoordinates
+                    activeObject?.position = newPosition!
+                    //TODO create active edge linked to play point
+                }
+
+                //activeObject?.position = SCNVector3Make(x! + CFloat(translation.x), y! - CFloat(translation.y), z!)
                 
             default:
                 println()
             }
+            
             
             
             
