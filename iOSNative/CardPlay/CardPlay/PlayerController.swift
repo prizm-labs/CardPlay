@@ -25,6 +25,8 @@ class Player {
     let HAND_PLANE_WIDTH:CGFloat = 600.0
     let HAND_PLANE_HEIGHT:CGFloat = 300.0
     
+    let transitionDuration:CFloat = 0.5
+    
     init(origin:SCNVector3){
         
         self.origin = origin
@@ -54,13 +56,22 @@ class Player {
         rootNode.addChildNode(handPlane)
     }
     
+    func playCardToGroup(card:CardNode, group:CardGroup) {
+        
+        handGroup.removeCard(card)
+        handGroup.organize(handGroup.organizationMode, vector: SCNVector3Zero, duration: transitionDuration)
+        
+        group.addCard(card)
+        group.organize(group.organizationMode, vector: SCNVector3Zero, duration: transitionDuration)
+    }
+    
     func drawCardFromGroup(card:CardNode, group:CardGroup) {
         
         group.removeCard(card)
-        group.organize(group.organizationMode, vector: SCNVector3Zero, duration: 1.0)
+        group.organize(group.organizationMode, vector: SCNVector3Zero, duration: transitionDuration)
         
         handGroup.addCard(card)
-        handGroup.organize(handGroup.organizationMode, vector: SCNVector3Zero, duration: 2.0)
+        handGroup.organize(handGroup.organizationMode, vector: SCNVector3Zero, duration: transitionDuration)
     }
     
     func drawCardsFromGroup(drawCount:Int, group:CardGroup){

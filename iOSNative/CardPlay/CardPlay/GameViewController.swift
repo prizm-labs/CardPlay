@@ -64,6 +64,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     
     var cardNodes:[CardNode] = [CardNode]()
     
+    var cardGroups:NSMutableArray = NSMutableArray()
+    
     var players:NSMutableArray = NSMutableArray()
     
     
@@ -477,11 +479,15 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         deck.setGroup(deckStackGroup)
         deck.spawn(_scene.rootNode)
         
+        cardGroups.addObject(deckStackGroup)
+        
         
         // Players
         var player = Player(origin: SCNVector3Make(0, 50, Float(TABLE_RADIUS*0.5)))
         
         _scene.rootNode.addChildNode(player.rootNode)
+        
+        players.addObject(player)
         
         // Draw card
         player.drawCardFromGroup(deck.cards[0] as CardNode, group: deck.group)
@@ -751,6 +757,43 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
 
     }
     
+    func checkPanObjectNearEdge(location:CGPoint)->Bool {
+        
+        //TODO change buffer size based on...
+        // device idiom iPad / iPhone
+        // user preferences
+        var buffer:CGFloat!
+        let size:CGSize = self.view.frame.size
+        
+        var isNearEdge = false
+        
+        if UIDevice.currentDevice().userInterfaceIdiom ==  UIUserInterfaceIdiom.Pad {
+            buffer = CGFloat(100)
+        } else if UIDevice.currentDevice().userInterfaceIdiom ==  UIUserInterfaceIdiom.Phone {
+            buffer = CGFloat(50)
+        }
+        
+        if location.x < buffer {
+            println("left edge")
+            isNearEdge = true
+        }
+        if location.x > size.width-buffer {
+            println("right edge")
+            isNearEdge = true
+        }
+        
+        if location.y < buffer {
+            println("top edge")
+            isNearEdge = true
+        }
+        if location.y > size.height-buffer {
+            println("bottom edge")
+            isNearEdge = true
+        }
+        
+        return isNearEdge
+    }
+    
     func handlePan1F(recognizer:UIPanGestureRecognizer) {
         
         let translation:CGPoint = recognizer.translationInView(self.view)
@@ -781,6 +824,14 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         if activeObject != nil {
             // manipulate object
+            
+            // check active edge
+            if checkPanObjectNearEdge(p) {
+                
+                // activate pending hotspot
+                
+            }
+            
             
             
             let x = activeObjectOrigin?.x
@@ -832,6 +883,31 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         if recognizer.state == UIGestureRecognizerState.Ended {
             println("panGesture ended")
+            
+            
+            if checkPanObjectNearEdge(p) && activeObject != nil {
+                
+                // confirm activeObject to pending hotspot
+                switch camera.orientationMode {
+                    
+                case .TableOverhead:
+                    println("sending card to hand")
+                    // Draw card
+                    let player = players[0] as Player
+                    let cardGroup = cardGroups[0] as CardGroup
+                    player.drawCardFromGroup(activeCard!, group: cardGroup)
+                    
+                case .PlayerHand:
+                    println("sending card to field")
+                    let player = players[0] as Player
+                    let cardGroup = cardGroups[0] as CardGroup
+                    player.playCardToGroup(activeCard!, group: cardGroup)
+                    
+                default:
+                    println("no hotspot binding")
+                    
+                }
+            }
             
             camera.willChangePerspective = true
             releaseActiveObject()
