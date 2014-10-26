@@ -66,11 +66,11 @@ class PlayPoint {
         
     }
     
-    func receiveCard(card:CardNode) {
+    func receiveCard(card:CardNode, isFlipped:Bool) {
         
         card.currentGroup?.removeCard(card)
         
-        let placements = currentGroup?.addCardAtPosition(card, position: rootNode.position)
+        let placements = currentGroup?.addCardAtPosition(card, position: rootNode.position, isFlipped: isFlipped)
         
         currentGroup?.commitPlacements(placements!, duration: 1.0)
     }

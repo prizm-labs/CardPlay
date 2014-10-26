@@ -774,7 +774,17 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
 
     }
     
-    func checkPanObjectNearEdge(location:CGPoint)->Bool {
+    enum ActiveEdgeLocation {
+        case None, Top, Right, Bottom, Left
+    }
+    
+    struct HotspotResult {
+        var location:CGPoint
+        var activeEdgeLocation:ActiveEdgeLocation
+        var hotspot:Hotspot? = nil
+    }
+    
+    func checkPanObjectNearEdge(location:CGPoint)->HotspotResult {
         
         //TODO change buffer size based on...
         // device idiom iPad / iPhone
@@ -782,7 +792,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         var buffer:CGFloat!
         let size:CGSize = self.view.frame.size
         
-        var isNearEdge = false
+        //var isNearEdge = false
+        var edgeLocation:ActiveEdgeLocation = ActiveEdgeLocation.None
         
         if UIDevice.currentDevice().userInterfaceIdiom ==  UIUserInterfaceIdiom.Pad {
             buffer = CGFloat(100)
@@ -792,23 +803,28 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         if location.x < buffer {
             println("left edge")
-            isNearEdge = true
+            edgeLocation = ActiveEdgeLocation.Left
+            //isNearEdge = true
         }
         if location.x > size.width-buffer {
             println("right edge")
-            isNearEdge = true
+            edgeLocation = ActiveEdgeLocation.Right
+            //isNearEdge = true
         }
         
         if location.y < buffer {
             println("top edge")
-            isNearEdge = true
+            edgeLocation = ActiveEdgeLocation.Top
+            //isNearEdge = true
         }
         if location.y > size.height-buffer {
             println("bottom edge")
-            isNearEdge = true
+            edgeLocation = ActiveEdgeLocation.Bottom
+            //isNearEdge = true
         }
         
-        return isNearEdge
+        return HotspotResult(location: location, activeEdgeLocation: edgeLocation, hotspot:nil)
+        //return isNearEdge
     }
     
     func handlePan1F(recognizer:UIPanGestureRecognizer) {
@@ -843,9 +859,11 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             // manipulate object
             
             // check active edge
-            if checkPanObjectNearEdge(p) {
-                
-                // activate pending hotspot
+            let hotspotResult = checkPanObjectNearEdge(p)
+            
+            if hotspotResult.activeEdgeLocation != ActiveEdgeLocation.None {
+
+                println("activate pending hotspot")
                 
             }
             
@@ -901,8 +919,9 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         if recognizer.state == UIGestureRecognizerState.Ended {
             println("panGesture ended")
             
+            let hotspotResult = checkPanObjectNearEdge(p)
             
-            if checkPanObjectNearEdge(p) && activeObject != nil {
+            if hotspotResult.activeEdgeLocation != ActiveEdgeLocation.None && activeObject != nil {
                 
                 // confirm activeObject to pending hotspot
                 switch camera.orientationMode {
@@ -921,7 +940,18 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
                     // play card to field via playPoint
                     if activePlayPoint != nil {
                         
-                        activePlayPoint?.receiveCard(activeCard!)
+                        var isFlipped:Bool = false
+                        
+                        // play card face up, if released on top edge
+                        if hotspotResult.activeEdgeLocation == ActiveEdgeLocation.Top {
+                            isFlipped = true
+                        
+                        // play card face down, if released on bottom edge
+                        } else if hotspotResult.activeEdgeLocation == ActiveEdgeLocation.Bottom {
+                            
+                        }
+                        
+                        activePlayPoint?.receiveCard(activeCard!, isFlipped:isFlipped)
                         
                     } else {
                         // play card to deck
@@ -966,35 +996,6 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             releaseActiveObject()
             
         }
-        
-        //        recognizer.view!.center = CGPoint(x:recognizer.view!.center.x + translation.x,
-        //            y:recognizer.view!.center.y + translation.y)
-        //        recognizer.setTranslation(CGPointZero, inView: self.view)
-        //
-        //        if recognizer.state == UIGestureRecognizerState.Ended {
-        //            // 1
-        //            let velocity = recognizer.velocityInView(self.view)
-        //            let magnitude = sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y))
-        //            let slideMultiplier = magnitude / 200
-        //            println("magnitude: \(magnitude), slideMultiplier: \(slideMultiplier)")
-        //
-        //            // 2
-        //            let slideFactor = 0.1 * slideMultiplier     //Increase for more of a slide
-        //            // 3
-        //            var finalPoint = CGPoint(x:recognizer.view!.center.x + (velocity.x * slideFactor),
-        //                y:recognizer.view!.center.y + (velocity.y * slideFactor))
-        //            // 4
-        //            finalPoint.x = min(max(finalPoint.x, 0), self.view.bounds.size.width)
-        //            finalPoint.y = min(max(finalPoint.y, 0), self.view.bounds.size.height)
-        //
-        //            // 5
-        //            UIView.animateWithDuration(Double(slideFactor * 2),
-        //                delay: 0,
-        //                // 6
-        //                options: UIViewAnimationOptions.CurveEaseOut,
-        //                animations: {recognizer.view!.center = finalPoint },
-        //                completion: nil)
-        //        }
 
     }
     
@@ -1017,9 +1018,6 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     }
     
     func handlePan(recognizer:UIPanGestureRecognizer) {
-        //comment for panning
-        //uncomment for tickling
-        //return;
         
         let fingers = recognizer.numberOfTouches()
         

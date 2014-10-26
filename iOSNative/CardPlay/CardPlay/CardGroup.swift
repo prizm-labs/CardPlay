@@ -37,6 +37,8 @@ class CardGroup :Equatable {
     var orientation:SCNVector3!
     var origin:SCNVector3!
     
+    var isFlipped:Bool = false
+    
     // origin
     
     init(organizationMode:OrganizationMode, orientation:SCNVector3, origin:SCNVector3){
@@ -62,7 +64,7 @@ class CardGroup :Equatable {
         println("card group \(self.cards.count)")
     }
     
-    func addCardAtPosition(card:CardNode, position:SCNVector3)->[CardPlacement] {
+    func addCardAtPosition(card:CardNode, position:SCNVector3, isFlipped:Bool)->[CardPlacement] {
         
         println("addCardAtPosition")
         
@@ -78,7 +80,7 @@ class CardGroup :Equatable {
             
         case .Open:
             println("Open")
-            placements.append(CardPlacement(card: card, position: position, isFlipped: false))
+            placements.append(CardPlacement(card: card, position: position, isFlipped: isFlipped))
             
         default:
             println("no binding")
@@ -125,14 +127,24 @@ class CardGroup :Equatable {
     func commitPlacements(placements:[CardPlacement], duration:CFloat) {
         
         // generate positions for updated cards
-        
-        
+ 
         // animate cards into position
         
         for placement in placements {
             
+            
             let card = placement.card
             let position = placement.position
+            let isFlipped = placement.isFlipped
+            
+            
+            // flip card before moving
+            
+            if (isFlipped != card?.isFlipped) {
+                
+                println("flipping card into playPoint")
+                card?.flip(1.0)
+            }
             
             if duration>0 {
                 SCNTransaction.begin()
