@@ -10,7 +10,11 @@ import Foundation
 import UIKit
 import SceneKit
 
-class CardGroup {
+// custom equivalence test
+// http://stackoverflow.com/questions/24019076/generic-type-with-custom-object-in-swift-language
+
+
+class CardGroup :Equatable {
     
     enum TransitionType {
         case Direct
@@ -41,7 +45,14 @@ class CardGroup {
     func addCard(card:CardNode){
         println("addCard")
         if !cards.containsObject(card) {
-            cards.addObject(card)
+            
+            if card.currentGroup != nil {
+                return;
+            } else {
+                cards.addObject(card)
+                card.currentGroup = self
+            }
+            
         }
         println("card group \(self.cards.count)")
     }
@@ -49,24 +60,32 @@ class CardGroup {
     func addCards(cards:NSMutableArray) {
         println("addCards")
         for card in cards {
-            if !self.cards.containsObject(card) {
-                self.cards.addObject(card)
-            }
+            let card:CardNode = card as CardNode
+            self.addCard(card)
         }
         println("card group \(self.cards.count)")
     }
+    
+    
     
     func removeCard(card:CardNode){
         println("removeCard")
         
         if self.cards.containsObject(card) {
             self.cards.removeObject(card)
+            
+            card.currentGroup = nil
+            
         }
         
     }
     
     func removeCards(cards:[CardNode]) {
-        
+        println("removeCards")
+        for card in cards {
+            let card:CardNode = card as CardNode
+            removeCard(card)
+        }
     }
     
     func commitTransfer() {
@@ -97,7 +116,7 @@ class CardGroup {
                 
                 if duration>0 {
                     SCNTransaction.begin()
-                    SCNTransaction.setAnimationDuration(2.0)
+                    SCNTransaction.setAnimationDuration(CFTimeInterval(duration))
                     SCNTransaction.setCompletionBlock({ () -> Void in
                         //cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
                         cardNode.updateRenderMode(CardNode.RenderModes.FrontAndBack)
@@ -112,6 +131,7 @@ class CardGroup {
                 //cardNode.rootNode.eulerAngles = self.orientation
                 
                 // TODO stack along vector
+                // like evenly spreading a stack in a direction
                 
                 // Stack height by index
 //                cardNode.rootNode.position = self.origin
@@ -136,14 +156,15 @@ class CardGroup {
                 
                 if duration>0 {
                     SCNTransaction.begin()
-                    SCNTransaction.setAnimationDuration(2.0)
+                    SCNTransaction.setAnimationDuration(CFTimeInterval(duration))
                 }
                 
                 cardNode.orientationHandle.eulerAngles = self.orientation
                 cardNode.positionHandle.position = self.origin
                 //cardNode.rootNode.eulerAngles = self.orientation
                 
-                // TODO stack along vector
+                // TODO generate curve path 
+                // TODO generate positoions along path, evenly distributed
                 
                 // Stack height by index
                 //cardNode.rootNode.position = self.origin
@@ -177,6 +198,10 @@ class CardGroup {
     
     // gather and stack
     // shuffle
+}
+
+func == (left: CardGroup, right: CardGroup) -> Bool {
+    return (ObjectIdentifier(left) == ObjectIdentifier(right))
 }
 
 /*

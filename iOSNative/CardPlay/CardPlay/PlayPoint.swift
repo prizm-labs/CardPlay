@@ -17,6 +17,10 @@ class PlayPoint {
     var indicatorNode:SCNNode!
     var highlightNode:SCNNode!
     
+    var currentGroup:CardGroup? = nil
+    
+    var isFlipped = false
+    
     let ORB_RADIUS:CGFloat = CGFloat(10.0)
     
     // animate creation
@@ -38,12 +42,37 @@ class PlayPoint {
     
     // animate destruction
     
-    init(position:SCNVector3, orientation:SCNVector3){
+    init(position:SCNVector3, group:CardGroup, isFlipped:Bool){
         
         rootNode = SCNNode()
         
+        currentGroup = group
+        
         indicatorNode = SCNNode(geometry: SCNSphere(radius: ORB_RADIUS))
         rootNode.addChildNode(indicatorNode)
+        
+        rootNode.position = position
+        
+        // card will take orientation from group
+        
+        self.isFlipped = isFlipped
+    }
+    
+    func updatePosition(position:SCNVector3) {
+        
+        rootNode.position = position
+        
+        //TODO animate indicator feedback: pulsing, glowing
+        
+    }
+    
+    func receievCard(card:CardNode) {
+        
+        card.currentGroup?.removeCard(card)
+        
+        currentGroup?.addCard(card)
+        
+        
         
     }
     

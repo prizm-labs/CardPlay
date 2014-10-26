@@ -72,6 +72,7 @@ class CardNode {
     var orientationHandle:SCNNode!
     
     var currentRenderMode = RenderModes.FrontAndBack
+    var currentGroup:CardGroup? = nil
     
     var _cardBack:SCNNode!
     var _cardFront:SCNNode!

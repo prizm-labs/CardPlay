@@ -73,6 +73,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     var activeObjectOrigin:SCNVector3?
     var activeCard:CardNode?
     
+    var activePlayPoint:PlayPoint?
+    
     // Accelerometer
     var motionManager:CMMotionManager!
     
@@ -482,8 +484,26 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         cardGroups.addObject(deckStackGroup)
         
         
+        // table default group
+        var tableOpenGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 0, CFloat(TABLE_RADIUS/2)) )
+        
+        // general table surface
+        var tableSurfaceGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 0, 0))
+        
+        // hover group
+        var tableHoverGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 150.0, 0))
+        
+        
+        cardGroups.addObject(tableOpenGroup)
+        
         // Players
         var player = Player(origin: SCNVector3Make(0, 50, Float(TABLE_RADIUS*0.5)))
+        
+        var playPoint = PlayPoint(position: SCNVector3Make(0, 0, 200), group: tableOpenGroup, isFlipped:true)
+        
+        activePlayPoint = playPoint
+        
+        _scene.rootNode.addChildNode(playPoint.rootNode)
         
         _scene.rootNode.addChildNode(player.rootNode)
         
@@ -492,11 +512,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         // Draw card
         player.drawCardFromGroup(deck.cards[0] as CardNode, group: deck.group)
         
-        // general table surface
-        var tableSurfaceGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 0, 0))
         
-        // hover group
-        var tableHoverGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:SCNVector3Make(0, 150.0, 0))
         
     }
     
@@ -665,10 +681,11 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             
             let position:SCNVector3? = result?.worldCoordinates
             
-            var playPoint = SCNNode(geometry: SCNSphere(radius: ORB_RADIUS))
-            playPoint.position = position!
-            _scene.rootNode.addChildNode(playPoint)
+//            var playPoint = SCNNode(geometry: SCNSphere(radius: ORB_RADIUS))
+//            playPoint.position = position!
+//            _scene.rootNode.addChildNode(playPoint)
             
+            activePlayPoint?.updatePosition(position!)
             //TODO create active edge linked to play point
         }
         
@@ -894,8 +911,9 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
                     println("sending card to hand")
                     // Draw card
                     let player = players[0] as Player
-                    let cardGroup = cardGroups[0] as CardGroup
-                    player.drawCardFromGroup(activeCard!, group: cardGroup)
+                    let cardGroup = activeCard?.currentGroup! // could be deck or field group
+                    
+                    player.drawCardFromGroup(activeCard!, group: cardGroup!)
                     
                 case .PlayerHand:
                     println("sending card to field")
@@ -907,6 +925,31 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
                     println("no hotspot binding")
                     
                 }
+                
+            } else if activeObject != nil {
+                
+                if camera.orientationMode == Camera.OrientationMode.TableOverhead {
+                    
+                    // if card was in deck group
+                    // remove card from deck group
+                    // add to open table group
+                    // lay card to rest on table
+                    
+                    //let currentGroup = activeCard?.currentGroup!
+                    
+                    let deckDefaultGroup = cardGroups[0] as CardGroup
+                    let tableOpenGroup = cardGroups[1] as CardGroup
+                    
+                    if activeCard?.currentGroup! == deckDefaultGroup {
+                        
+                        println("removing card from deck group")
+                        
+                        deckDefaultGroup.removeCard(activeCard!)
+                        tableOpenGroup.addCard(activeCard!)
+                    }
+                }
+                
+                
             }
             
             camera.willChangePerspective = true
