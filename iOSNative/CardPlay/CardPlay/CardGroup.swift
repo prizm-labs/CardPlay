@@ -13,6 +13,11 @@ import SceneKit
 // custom equivalence test
 // http://stackoverflow.com/questions/24019076/generic-type-with-custom-object-in-swift-language
 
+struct CardPlacement {
+    var card:CardNode?
+    var position:SCNVector3?
+    var isFlipped:Bool
+}
 
 class CardGroup :Equatable {
     
@@ -57,6 +62,35 @@ class CardGroup :Equatable {
         println("card group \(self.cards.count)")
     }
     
+    func addCardAtPosition(card:CardNode, position:SCNVector3)->[CardPlacement] {
+        
+        println("addCardAtPosition")
+        
+        addCard(card)
+        
+        var placements:[CardPlacement] = []
+        
+        switch organizationMode {
+            
+        // for open mode
+        // card will be added at same point in plane
+        // or translated along a normal from position to the plane (i.e. if hovering above table surface)
+            
+        case .Open:
+            println("Open")
+            placements.append(CardPlacement(card: card, position: position, isFlipped: false))
+            
+        default:
+            println("no binding")
+            
+        }
+        
+        // for fan mode
+        // card will be added at index (among other cards) closest to position
+        
+        return placements
+    }
+    
     func addCards(cards:NSMutableArray) {
         println("addCards")
         for card in cards {
@@ -88,18 +122,44 @@ class CardGroup :Equatable {
         }
     }
     
-    func commitTransfer() {
+    func commitPlacements(placements:[CardPlacement], duration:CFloat) {
         
         // generate positions for updated cards
         
         
         // animate cards into position
         
+        for placement in placements {
+            
+            let card = placement.card
+            let position = placement.position
+            
+            if duration>0 {
+                SCNTransaction.begin()
+                SCNTransaction.setAnimationDuration(CFTimeInterval(duration))
+                SCNTransaction.setCompletionBlock({ () -> Void in
+                    //cardNode.updateRenderMode(CardNode.RenderModes.BackOnly)
+                    //cardNode.updateRenderMode(CardNode.RenderModes.FrontAndBack)
+                    
+                })
+            }
+            
+            card?.orientationHandle.eulerAngles = self.orientation
+            card?.positionHandle.position = position!
+            
+            if duration>0 {
+                SCNTransaction.commit()
+            }
+        }
+        
     }
     
     func organize(mode:OrganizationMode, vector:SCNVector3, duration:CFloat) {
 
         organizationMode = mode
+        
+        
+        //TODO refactor into generating placements per mode, then commit placements
         
         switch organizationMode {
             
@@ -112,7 +172,7 @@ class CardGroup :Equatable {
             for (index, cardNode) in enumerate(cards) {
                 
                 var cardNode:CardNode = cards[index] as CardNode
-                
+
                 
                 if duration>0 {
                     SCNTransaction.begin()

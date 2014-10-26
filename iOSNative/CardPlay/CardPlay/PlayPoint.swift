@@ -66,14 +66,13 @@ class PlayPoint {
         
     }
     
-    func receievCard(card:CardNode) {
+    func receiveCard(card:CardNode) {
         
         card.currentGroup?.removeCard(card)
         
-        currentGroup?.addCard(card)
+        let placements = currentGroup?.addCardAtPosition(card, position: rootNode.position)
         
-        
-        
+        currentGroup?.commitPlacements(placements!, duration: 1.0)
     }
     
 }

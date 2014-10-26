@@ -917,9 +917,19 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
                     
                 case .PlayerHand:
                     println("sending card to field")
-                    let player = players[0] as Player
-                    let cardGroup = cardGroups[0] as CardGroup
-                    player.playCardToGroup(activeCard!, group: cardGroup)
+                        
+                    // play card to field via playPoint
+                    if activePlayPoint != nil {
+                        
+                        activePlayPoint?.receiveCard(activeCard!)
+                        
+                    } else {
+                        // play card to deck
+                        let player = players[0] as Player
+                        let cardGroup = cardGroups[0] as CardGroup
+                        player.playCardToGroup(activeCard!, group: cardGroup)
+                    }
+                    
                     
                 default:
                     println("no hotspot binding")
