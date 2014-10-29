@@ -220,31 +220,54 @@ class CardGroup :Equatable {
             
         case .Fan:
             println("Fan")
+            
+            var placements:[CardPlacement] = []
+            
             for (index, cardNode) in enumerate(cards) {
                 
                 var cardNode:CardNode = cards[index] as CardNode
                 
                 cardNode.updateRenderMode(CardNode.RenderModes.FrontAndBack)
                 
-                if duration>0 {
-                    SCNTransaction.begin()
-                    SCNTransaction.setAnimationDuration(CFTimeInterval(duration))
+                if cards.count==1 {
+                    placements.append(CardPlacement(card: cardNode, position: self.origin, isFlipped: cardNode.isFlipped))
+                } else {
+                    
+                    // TODO generate curve path
+                    // TODO generate positoions along path, evenly distributed
+                    
+                    // 0, ... , MAX
+                    
+                    let targetWidth:CFloat = min( CFloat(cardNode.size.width)*0.75*CFloat(cards.count), CFloat(200.0) )
+                    
+                    let x = self.origin.x-targetWidth/2.0 + CFloat(index)*(targetWidth/CFloat(cards.count-1))
+                    
+                    let y = self.origin.y
+                    
+                    // Offset for stacking
+                    let z = self.origin.z + CFloat(cardNode.size.thickness) * (CFloat(index)+0.5)
+                    
+                    placements.append(CardPlacement(card: cardNode, position: SCNVector3Make(x, y, z), isFlipped: cardNode.isFlipped))
+  
                 }
                 
-                cardNode.orientationHandle.eulerAngles = self.orientation
-                cardNode.positionHandle.position = self.origin
-                //cardNode.rootNode.eulerAngles = self.orientation
+                // TODO transform these points relative to player's orientation at table
                 
-                // TODO generate curve path 
-                // TODO generate positoions along path, evenly distributed
+                commitPlacements(placements, duration: 1.0)
                 
-                // Stack height by index
-                //cardNode.rootNode.position = self.origin
-                //cardNode.rootNode.position.y = Float(cardNode.size.thickness) * (Float(index)*2.0+0.5)
+//                if duration>0 {
+//                    SCNTransaction.begin()
+//                    SCNTransaction.setAnimationDuration(CFTimeInterval(duration))
+//                }
+//                
+//                cardNode.orientationHandle.eulerAngles = self.orientation
+//                cardNode.positionHandle.position = self.origin
+//                //cardNode.rootNode.eulerAngles = self.orientation
+//                
+//                if duration>0 {
+//                    SCNTransaction.commit()
+//                }
                 
-                if duration>0 {
-                    SCNTransaction.commit()
-                }
             }
             
             

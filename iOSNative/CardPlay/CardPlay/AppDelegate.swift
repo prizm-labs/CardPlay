@@ -16,6 +16,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
+        
+        TestFlight.takeOff("89155ba9-de8c-46e4-a2b9-d1bd36fa15fd")
+        
         return true
     }
 

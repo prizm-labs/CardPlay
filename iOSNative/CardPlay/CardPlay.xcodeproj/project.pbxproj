@@ -29,9 +29,6 @@
 		3252F25419ECD92E00DFB721 /* CardPlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3252F25319ECD92E00DFB721 /* CardPlayTests.swift */; };
 		3252F29219EDCC5A00DFB721 /* green-felt.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3252F29119EDCC5A00DFB721 /* green-felt.jpg */; };
 		32788CA419EE7A3C003EFD9E /* HandManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32788CA319EE7A3C003EFD9E /* HandManager.swift */; };
-		32A2395219F45EA700A44B61 /* libTestFlight.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 32A2394C19F45EA600A44B61 /* libTestFlight.a */; };
-		32A2395319F45EA700A44B61 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 32A2394D19F45EA600A44B61 /* README.md */; };
-		32A2395419F45EA700A44B61 /* release_notes.md in Sources */ = {isa = PBXBuildFile; fileRef = 32A2394E19F45EA600A44B61 /* release_notes.md */; };
 		32A7CE4B19F7360D00E0BE99 /* card-manifest_full.json in Resources */ = {isa = PBXBuildFile; fileRef = 32A7CE4A19F7360D00E0BE99 /* card-manifest_full.json */; };
 		32A7CE4D19F9AB4400E0BE99 /* PlayPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A7CE4C19F9AB4400E0BE99 /* PlayPoint.swift */; };
 		32A7CE9519F9B49000E0BE99 /* back-default.png in Resources */ = {isa = PBXBuildFile; fileRef = 32A7CE5019F9B49000E0BE99 /* back-default.png */; };
@@ -102,6 +99,10 @@
 		32A7CED619F9B49000E0BE99 /* queen_of_spades.png in Resources */ = {isa = PBXBuildFile; fileRef = 32A7CE9219F9B49000E0BE99 /* queen_of_spades.png */; };
 		32A7CED719F9B49000E0BE99 /* queen_of_spades2.png in Resources */ = {isa = PBXBuildFile; fileRef = 32A7CE9319F9B49000E0BE99 /* queen_of_spades2.png */; };
 		32A7CED819F9B49000E0BE99 /* red_joker.png in Resources */ = {isa = PBXBuildFile; fileRef = 32A7CE9419F9B49000E0BE99 /* red_joker.png */; };
+		32AD19A519FF455A003CBE4B /* libTestFlight.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 32AD199F19FF455A003CBE4B /* libTestFlight.a */; };
+		32AD19A619FF455A003CBE4B /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 32AD19A019FF455A003CBE4B /* README.md */; };
+		32AD19A719FF455A003CBE4B /* release_notes.md in Sources */ = {isa = PBXBuildFile; fileRef = 32AD19A119FF455A003CBE4B /* release_notes.md */; };
+		32AD19A919FF45BC003CBE4B /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 32AD19A819FF45BC003CBE4B /* libz.dylib */; };
 		32DF23F519F254C70025F9A4 /* card-manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 32DF23F419F254C70025F9A4 /* card-manifest.json */; };
 		32DF247F19F318F30025F9A4 /* CardNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32DF247E19F318F30025F9A4 /* CardNode.swift */; };
 /* End PBXBuildFile section */
@@ -143,12 +144,6 @@
 		3252F25319ECD92E00DFB721 /* CardPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardPlayTests.swift; sourceTree = "<group>"; };
 		3252F29119EDCC5A00DFB721 /* green-felt.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "green-felt.jpg"; path = "CardPlay/art.scnassets/green-felt.jpg"; sourceTree = "<group>"; };
 		32788CA319EE7A3C003EFD9E /* HandManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HandManager.swift; sourceTree = "<group>"; };
-		32A2394C19F45EA600A44B61 /* libTestFlight.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libTestFlight.a; sourceTree = "<group>"; };
-		32A2394D19F45EA600A44B61 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		32A2394E19F45EA600A44B61 /* release_notes.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = release_notes.md; sourceTree = "<group>"; };
-		32A2394F19F45EA600A44B61 /* TestFlight+AsyncLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TestFlight+AsyncLogging.h"; sourceTree = "<group>"; };
-		32A2395019F45EA600A44B61 /* TestFlight+ManualSessions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TestFlight+ManualSessions.h"; sourceTree = "<group>"; };
-		32A2395119F45EA600A44B61 /* TestFlight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFlight.h; sourceTree = "<group>"; };
 		32A7CE4A19F7360D00E0BE99 /* card-manifest_full.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = "card-manifest_full.json"; path = "assets/json/card-manifest_full.json"; sourceTree = "<group>"; };
 		32A7CE4C19F9AB4400E0BE99 /* PlayPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayPoint.swift; sourceTree = "<group>"; };
 		32A7CE5019F9B49000E0BE99 /* back-default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "back-default.png"; sourceTree = "<group>"; };
@@ -219,6 +214,14 @@
 		32A7CE9219F9B49000E0BE99 /* queen_of_spades.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = queen_of_spades.png; sourceTree = "<group>"; };
 		32A7CE9319F9B49000E0BE99 /* queen_of_spades2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = queen_of_spades2.png; sourceTree = "<group>"; };
 		32A7CE9419F9B49000E0BE99 /* red_joker.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = red_joker.png; sourceTree = "<group>"; };
+		32AD196B19FF4219003CBE4B /* CardPlayBridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CardPlayBridging-Header.h"; sourceTree = "<group>"; };
+		32AD199F19FF455A003CBE4B /* libTestFlight.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libTestFlight.a; sourceTree = "<group>"; };
+		32AD19A019FF455A003CBE4B /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		32AD19A119FF455A003CBE4B /* release_notes.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = release_notes.md; sourceTree = "<group>"; };
+		32AD19A219FF455A003CBE4B /* TestFlight+AsyncLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TestFlight+AsyncLogging.h"; sourceTree = "<group>"; };
+		32AD19A319FF455A003CBE4B /* TestFlight+ManualSessions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TestFlight+ManualSessions.h"; sourceTree = "<group>"; };
+		32AD19A419FF455A003CBE4B /* TestFlight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFlight.h; sourceTree = "<group>"; };
+		32AD19A819FF45BC003CBE4B /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		32DF23F419F254C70025F9A4 /* card-manifest.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = "card-manifest.json"; path = "assets/json/card-manifest.json"; sourceTree = "<group>"; };
 		32DF247E19F318F30025F9A4 /* CardNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CardNode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -228,7 +231,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				32A2395219F45EA700A44B61 /* libTestFlight.a in Frameworks */,
+				32AD19A919FF45BC003CBE4B /* libz.dylib in Frameworks */,
+				32AD19A519FF455A003CBE4B /* libTestFlight.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,7 +294,8 @@
 		3252F22D19ECD92E00DFB721 = {
 			isa = PBXGroup;
 			children = (
-				32A2394B19F45EA600A44B61 /* TestFlightSDK3.0.2 */,
+				32AD19A819FF45BC003CBE4B /* libz.dylib */,
+				32AD199E19FF455A003CBE4B /* TestFlightSDK3.0.2 */,
 				3252F28F19EDCC4900DFB721 /* Resources */,
 				3252F23819ECD92E00DFB721 /* CardPlay */,
 				3252F25019ECD92E00DFB721 /* CardPlayTests */,
@@ -328,6 +333,7 @@
 			isa = PBXGroup;
 			children = (
 				3252F23A19ECD92E00DFB721 /* Info.plist */,
+				32AD196B19FF4219003CBE4B /* CardPlayBridging-Header.h */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -365,20 +371,6 @@
 				32DF23F219F254770025F9A4 /* environment */,
 			);
 			name = images;
-			sourceTree = "<group>";
-		};
-		32A2394B19F45EA600A44B61 /* TestFlightSDK3.0.2 */ = {
-			isa = PBXGroup;
-			children = (
-				32A2394C19F45EA600A44B61 /* libTestFlight.a */,
-				32A2394D19F45EA600A44B61 /* README.md */,
-				32A2394E19F45EA600A44B61 /* release_notes.md */,
-				32A2394F19F45EA600A44B61 /* TestFlight+AsyncLogging.h */,
-				32A2395019F45EA600A44B61 /* TestFlight+ManualSessions.h */,
-				32A2395119F45EA600A44B61 /* TestFlight.h */,
-			);
-			name = TestFlightSDK3.0.2;
-			path = CardPlay/TestFlightSDK3.0.2;
 			sourceTree = "<group>";
 		};
 		32A7CE4E19F9B47B00E0BE99 /* SD */ = {
@@ -472,6 +464,19 @@
 			);
 			name = front;
 			path = "assets/images/deck-default/SD/front";
+			sourceTree = "<group>";
+		};
+		32AD199E19FF455A003CBE4B /* TestFlightSDK3.0.2 */ = {
+			isa = PBXGroup;
+			children = (
+				32AD199F19FF455A003CBE4B /* libTestFlight.a */,
+				32AD19A019FF455A003CBE4B /* README.md */,
+				32AD19A119FF455A003CBE4B /* release_notes.md */,
+				32AD19A219FF455A003CBE4B /* TestFlight+AsyncLogging.h */,
+				32AD19A319FF455A003CBE4B /* TestFlight+ManualSessions.h */,
+				32AD19A419FF455A003CBE4B /* TestFlight.h */,
+			);
+			path = TestFlightSDK3.0.2;
 			sourceTree = "<group>";
 		};
 		32DF23F219F254770025F9A4 /* environment */ = {
@@ -668,17 +673,17 @@
 				04FBB73419F0616900E763FC /* LobbyViewController.swift in Sources */,
 				0424D3E319F064A3004A80FF /* PlayerMenuViewController.swift in Sources */,
 				04FBB72C19EF8D1B00E763FC /* CardGroup.swift in Sources */,
+				32AD19A719FF455A003CBE4B /* release_notes.md in Sources */,
 				3252F24019ECD92E00DFB721 /* GameViewController.swift in Sources */,
 				3204915519FB0CF000D6C6B5 /* HitTest.swift in Sources */,
 				04DC984819F1AB5F00D69596 /* StoreViewController.swift in Sources */,
 				04DC984619F1A9CD00D69596 /* CloudConnection.swift in Sources */,
-				32A2395319F45EA700A44B61 /* README.md in Sources */,
 				32788CA419EE7A3C003EFD9E /* HandManager.swift in Sources */,
-				32A2395419F45EA700A44B61 /* release_notes.md in Sources */,
 				0424D3E519F0C91A004A80FF /* CardDeck.swift in Sources */,
 				32A7CE4D19F9AB4400E0BE99 /* PlayPoint.swift in Sources */,
 				04FBB72E19EF90E600E763FC /* PlayerController.swift in Sources */,
 				04DC984419F19CD600D69596 /* GameWorld.swift in Sources */,
+				32AD19A619FF455A003CBE4B /* README.md in Sources */,
 				3252F23C19ECD92E00DFB721 /* AppDelegate.swift in Sources */,
 				04FBB73019EF930300E763FC /* Table.swift in Sources */,
 				32DF247F19F318F30025F9A4 /* CardNode.swift in Sources */,
@@ -810,14 +815,17 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_RESOURCE_RULES_PATH = "$(SDKROOT)/ResourceRules.plist";
 				INFOPLIST_FILE = CardPlay/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/CardPlay/TestFlightSDK3.0.2",
+					"$(PROJECT_DIR)/TestFlightSDK3.0.2",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "/Users/michaelgarrido/CardPlay/iOSNative/CardPlay/CardPlay/CardPlayBridging-Header.h";
 			};
 			name = Debug;
 		};
@@ -827,14 +835,17 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_RESOURCE_RULES_PATH = "$(SDKROOT)/ResourceRules.plist";
 				INFOPLIST_FILE = CardPlay/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/CardPlay/TestFlightSDK3.0.2",
+					"$(PROJECT_DIR)/TestFlightSDK3.0.2",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "/Users/michaelgarrido/CardPlay/iOSNative/CardPlay/CardPlay/CardPlayBridging-Header.h";
 			};
 			name = Release;
 		};

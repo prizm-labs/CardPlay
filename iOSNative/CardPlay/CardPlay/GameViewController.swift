@@ -251,7 +251,7 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         //gestureRecognizers.addObject(pinchGesture)
         
         gestureRecognizers.addObject(tap1F3TGesture)
-//        gestureRecognizers.addObject(longPressGesture)
+        gestureRecognizers.addObject(longPressGesture)
 //        gestureRecognizers.addObject(swipeGesture)
         
         if let existingGestureRecognizers = sceneView.gestureRecognizers {
@@ -620,8 +620,29 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         println("handleLongPress")
         
         // long press on card, change to activation mode
+        // long press on single card , flip
+
+        // in open table group or
+        
+        // long press on deck
         
         // single tap on original activated card, deactivate card
+        
+        let scnView = self.view as SCNView
+        
+        // check what nodes are tapped
+        let p = recognizer.locationInView(scnView)
+        let object:SCNNode? = getObjectFromHitTest(p)
+        
+        if object !== nil {
+            
+            let cardNode = findActiveObject(object!) as CardNode?
+            
+            if cardNode != nil {
+                cardNode?.flip(1.0)
+            }
+        }
+        
     }
     
     func handleSwipe(recognizer:UISwipeGestureRecognizer) {
