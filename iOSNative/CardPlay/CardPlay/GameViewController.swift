@@ -16,7 +16,7 @@ import CoreMotion
 import Foundation
 
 
-class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysicsContactDelegate  {
+class GameViewController: UIViewController, UIGestureRecognizerDelegate, SCNSceneRendererDelegate, SCNPhysicsContactDelegate  {
     
     let ORB_RADIUS = CGFloat(15)
     let CARD_WIDTH = CGFloat(500)
@@ -39,6 +39,8 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
     var _hitTest:HitTest!
     
     var _scene:SCNScene!
+    
+    var uiOverlay:SKScene!
     
     var _cameraNode:SCNNode!
     var _cameraHandle:SCNNode!
@@ -298,6 +300,10 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
         
         sceneView.backgroundColor = SKColor.whiteColor()
     
+        uiOverlay = UIOverlayScene(size: view.bounds.size)
+        
+        sceneView.overlaySKScene = uiOverlay
+        
         // cache for binding objects to gestures
         activeObject = nil
         activeCard = nil
@@ -1141,6 +1147,15 @@ class GameViewController: UIViewController, SCNSceneRendererDelegate, SCNPhysics
             SCNTransaction.commit()
         }
 
+    }
+    
+    
+    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
+
+        var touch:UITouch? = touches.anyObject() as? UITouch
+        var p = touch?.locationInNode(uiOverlay)
+       
+        println("touch in overlay \(p?.x) , \(p?.y)")
     }
     
     func moveCamera() {

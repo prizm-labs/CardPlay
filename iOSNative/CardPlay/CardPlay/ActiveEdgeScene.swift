@@ -10,11 +10,38 @@ import Foundation
 import SpriteKit
 
 
-class ActiveEdgeScene:SKScene {
+class UIOverlayScene:SKScene {
     
     var egdeGroups:NSMutableArray = NSMutableArray()
     var currentEdgeGroup:EdgeGroup?
     var currentHotspot:Hotspot?
+    
+    
+    // main menu buton
+    
+    override init(size: CGSize) {
+        
+        
+        super.init(size: size)
+        
+        
+        println("overlay size: \(size.width) , \(size.height)")
+        
+        currentEdgeGroup = nil
+        currentHotspot = nil
+        
+        self.backgroundColor = SKColor(red: 0.15, green: 0.15, blue: 0.3, alpha: 0.5)
+        
+        var scoreLabel:SKLabelNode = SKLabelNode(text: "hello world")
+        scoreLabel.position = CGPoint(x: 100.0, y: 100.0)
+        self.addChild(scoreLabel)
+        
+        scoreLabel.calculateAccumulatedFrame()
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     //on pan update (with active object) near edge
     func detectHotspotNearLocation(location:CGPoint)->Hotspot? {
