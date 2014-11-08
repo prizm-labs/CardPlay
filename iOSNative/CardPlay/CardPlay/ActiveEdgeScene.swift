@@ -32,11 +32,23 @@ class UIOverlayScene:SKScene {
         
         self.backgroundColor = SKColor(red: 0.15, green: 0.15, blue: 0.3, alpha: 0.5)
         
-        var scoreLabel:SKLabelNode = SKLabelNode(text: "hello world")
-        scoreLabel.position = CGPoint(x: 100.0, y: 100.0)
+        var scoreLabel:SKLabelNode = SKLabelNode(text: "Connect")
+        scoreLabel.fontSize = 20.0
+        scoreLabel.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Left
+        scoreLabel.name = "btn:connect"
+        scoreLabel.position = CGPoint(x: 50.0, y: 50.0)
         self.addChild(scoreLabel)
         
         scoreLabel.calculateAccumulatedFrame()
+        
+        var addPlayerLabel:SKLabelNode = SKLabelNode(text: "Add player")
+        addPlayerLabel.fontSize = 20.0
+        addPlayerLabel.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Right
+        addPlayerLabel.name = "btn:player/add"
+        
+        addPlayerLabel.position = CGPoint(x: CGFloat(size.width)-CGFloat(50.0), y: 50 )
+        self.addChild(addPlayerLabel)
+
     }
 
     required init?(coder aDecoder: NSCoder) {

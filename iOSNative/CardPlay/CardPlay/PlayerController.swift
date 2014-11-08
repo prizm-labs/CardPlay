@@ -27,10 +27,38 @@ class Player {
     
     let transitionDuration:CFloat = 0.5
     
-    init(origin:SCNVector3){
+    var id:String? = nil
+    
+    var isRendered = false
+    
+    init(id:String) {
+        
+        self.id = id
+        
+        _init()
+    }
+    
+    
+    func _init() {
+    }
+    
+    func updateOrigin(origin:SCNVector3) {
+        
+        // when another player enters or exits table
+        // move position at table
         
         self.origin = origin
+        
+        self.rootNode.position = self.origin
+        
+        // update all group origins
+    }
     
+    func render(origin:SCNVector3, rootNode:SCNNode) {
+        
+        isRendered = true
+        
+        self.origin = origin
         
         // card groups
         handGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Fan, orientation: SCNVector3Make(0, 0, 0), origin:self.origin)
@@ -38,7 +66,7 @@ class Player {
         fieldGroup = CardGroup(organizationMode: CardGroup.OrganizationMode.Open, orientation: SCNVector3Make(CFloat(M_PI/2), 0, 0), origin:self.origin)
         
         // objects
-        rootNode.position = self.origin
+        self.rootNode.position = self.origin
         
         var handPlanePath:UIBezierPath = UIBezierPath(rect: CGRectMake(-HAND_PLANE_WIDTH/2, -HAND_PLANE_HEIGHT/2, HAND_PLANE_WIDTH, HAND_PLANE_HEIGHT))
         
@@ -52,8 +80,10 @@ class Player {
         positionIndicator = SCNNode(geometry: SCNSphere(radius: INDICATOR_SIZE))
         positionIndicator.position = SCNVector3Zero
         
-        rootNode.addChildNode(positionIndicator)
-        rootNode.addChildNode(handPlane)
+        self.rootNode.addChildNode(positionIndicator)
+        self.rootNode.addChildNode(handPlane)
+        
+        rootNode.addChildNode(self.rootNode)
     }
     
     func playCardToGroup(card:CardNode, group:CardGroup) {

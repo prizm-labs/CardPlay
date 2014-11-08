@@ -15,8 +15,14 @@ import CoreMotion
 
 import Foundation
 
+import MultipeerConnectivity
 
-class GameViewController: UIViewController, UIGestureRecognizerDelegate, SCNSceneRendererDelegate, SCNPhysicsContactDelegate  {
+class GameViewController: UIViewController,
+    UIGestureRecognizerDelegate,
+    SCNSceneRendererDelegate, SCNPhysicsContactDelegate,
+    MCBrowserViewControllerDelegate, MCSessionDelegate  {
+    
+    
     
     let ORB_RADIUS = CGFloat(15)
     let CARD_WIDTH = CGFloat(500)
@@ -81,10 +87,114 @@ class GameViewController: UIViewController, UIGestureRecognizerDelegate, SCNScen
     var motionManager:CMMotionManager!
     
     
+    
+    let serviceType = "LCOC-Chat"
+    
+    var browser : MCBrowserViewController!
+    var assistant : MCAdvertiserAssistant!
+    var session : MCSession!
+    var peerID: MCPeerID!
+    
+    @IBOutlet var chatView: UITextView!
+    @IBOutlet var messageField: UITextField!
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.peerID = MCPeerID(displayName: UIDevice.currentDevice().name)
+        self.session = MCSession(peer: peerID)
+        self.session.delegate = self
+        
+        // create the browser viewcontroller with a unique service name
+        self.browser = MCBrowserViewController(serviceType:serviceType,
+            session:self.session)
+        
+        self.browser.delegate = self;
+        
+        self.assistant = MCAdvertiserAssistant(serviceType:serviceType,
+            discoveryInfo:nil, session:self.session)
+        
+        // tell the assistant to start advertising our fabulous chat
+        self.assistant.start()
+
+        
         setup()
     }
+    
+    
+    func showBrowser() {
+        // Show the browser view controller
+        self.presentViewController(self.browser, animated: true, completion: nil)
+    }
+
+    
+    // MC DELEGATE FUNCTIONS
+    
+    func browserViewControllerDidFinish(
+        browserViewController: MCBrowserViewController!)  {
+            // Called when the browser view controller is dismissed (ie the Done
+            // button was tapped)
+            
+            self.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func browserViewControllerWasCancelled(
+        browserViewController: MCBrowserViewController!)  {
+            // Called when the browser view controller is cancelled
+            
+            self.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func session(session: MCSession!, didReceiveData data: NSData!,
+        fromPeer peerID: MCPeerID!)  {
+            // Called when a peer sends an NSData to us
+            
+            var msg = NSString(data: data, encoding: NSUTF8StringEncoding)
+            println("didReceiveData \(msg)");
+            
+            
+            
+            // This needs to run on the main queue
+            dispatch_async(dispatch_get_main_queue()) {
+                
+                var msg = NSString(data: data, encoding: NSUTF8StringEncoding)
+                
+                
+                //self.updateChat(msg!, fromPeer: peerID)
+            }
+    }
+    
+    // The following methods do nothing, but the MCSessionDelegate protocol
+    // requires that we implement them.
+    func session(session: MCSession!,
+        didStartReceivingResourceWithName resourceName: String!,
+        fromPeer peerID: MCPeerID!, withProgress progress: NSProgress!)  {
+            
+            // Called when a peer starts sending a file to us
+    }
+    
+    func session(session: MCSession!,
+        didFinishReceivingResourceWithName resourceName: String!,
+        fromPeer peerID: MCPeerID!,
+        atURL localURL: NSURL!, withError error: NSError!)  {
+            // Called when a file has finished transferring from another peer
+    }
+    
+    func session(session: MCSession!, didReceiveStream stream: NSInputStream!,
+        withName streamName: String!, fromPeer peerID: MCPeerID!)  {
+            // Called when a peer establishes a stream with us
+    }
+    
+    func session(session: MCSession!, peer peerID: MCPeerID!,
+        didChangeState state: MCSessionState)  {
+            // Called when a connected peer changes state (for example, goes offline)
+            
+    }
+
+    
+    
+    // ACCELEROMETER FUNCTIONS
     
     func parseAcceleration(data:CMAccelerometerData){
         
@@ -502,18 +612,21 @@ class GameViewController: UIViewController, UIGestureRecognizerDelegate, SCNScen
         
         cardGroups.addObject(tableOpenGroup)
         
-        // Players
-        var player = Player(origin: SCNVector3Make(0, 50, Float(TABLE_RADIUS*0.5)))
         
+        // Players
+        var player = addPlayer("player1")
+    
+        updatePlayers()
+        //player.render(SCNVector3Make(0, 50, Float(TABLE_RADIUS*0.5)), rootNode:_scene.rootNode)
+        
+        
+        // Play point
         var playPoint = PlayPoint(position: SCNVector3Make(0, 0, 200), group: tableOpenGroup, isFlipped:true)
         
         activePlayPoint = playPoint
         
         _scene.rootNode.addChildNode(playPoint.rootNode)
         
-        _scene.rootNode.addChildNode(player.rootNode)
-        
-        players.addObject(player)
         
         // Draw card
         player.drawCardFromGroup(deck.cards[0] as CardNode, group: deck.group)
@@ -1156,6 +1269,104 @@ class GameViewController: UIViewController, UIGestureRecognizerDelegate, SCNScen
         var p = touch?.locationInNode(uiOverlay)
        
         println("touch in overlay \(p?.x) , \(p?.y)")
+        
+        var node:SKNode? = uiOverlay.nodeAtPoint(p!)
+        var name:String? = node?.name
+        
+        if (node !== nil && name? !== nil) {
+            
+            switch name! {
+                
+                case "btn:connect":
+                    showBrowser()
+                
+                case "btn:player/add":
+                    
+                    let playerId = players.count+1
+                    
+                    addPlayer("player"+String(playerId))
+                    
+                    updatePlayers()
+                
+                
+                default:
+                    break
+            }
+        
+        }
+        
+    }
+    
+    func calculatePlayerPositions(count:Int, radius:Float, origin:SCNVector3) -> [SCNVector3] {
+        
+        println("calculatePlayerPositions")
+        
+        var positions:[SCNVector3] = []
+        var angles:[Float] = []
+        // +z maps to -y for points along circle
+        
+        let interval = Float(2.0*M_PI)/Float(count)
+        println(interval)
+        
+        for index in 0...count-1 {
+            angles.append( Float(index)*Float(interval) )
+        }
+        
+        println("angles: \(angles)")
+        
+         // add PI to angles, since user's position is always at (0,1*radius) or (0,?,-1*radius)
+        for angle in angles {
+            
+            let theta = Float(angle) + Float(M_PI_2)
+            println("theta: \(theta)")
+            
+            let x = radius * cosf(theta) + origin.x
+            let z = radius * sinf(theta) + origin.z
+            
+            positions.append(SCNVector3Make(x, origin.y, z))
+            
+            
+        }
+        
+        return positions
+    }
+    
+    func updatePlayers(){
+        
+        var positions = calculatePlayerPositions(players.count, radius: Float(TABLE_RADIUS/2), origin: SCNVector3Zero)
+        
+        // is player rendered
+        
+        println("updatePlayers: \(players.count)")
+        
+        for (index, p) in enumerate(players) {
+            
+            let player = p as Player
+            
+            if (player.isRendered) {
+                player.updateOrigin(positions[index])
+            } else {
+                player.render(positions[index], rootNode: _scene.rootNode)
+            }
+            
+            
+        }
+        
+        
+        // get current number of players
+        // calculate player positions around table
+        
+        // place player indicators at each position
+        
+        //player.render(SCNVector3Make(0, 50, Float(TABLE_RADIUS*0.5)), rootNode:_scene.rootNode)
+    }
+    
+    func addPlayer(id:String) -> Player {
+        
+        var player = Player(id:id)
+        players.addObject(player)
+        
+        return player
     }
     
     func moveCamera() {
