@@ -9,6 +9,8 @@
 import Foundation
 import SceneKit
 
+let CURRENT_PLAYER_ID = "player1"
+
 class Player {
     
     var rootNode = SCNNode()
@@ -40,9 +42,10 @@ class Player {
     
     
     func _init() {
+        
     }
     
-    func updateOrigin(origin:SCNVector3) {
+    func updateOrigin(origin:SCNVector3, orientation:SCNVector3) {
         
         // when another player enters or exits table
         // move position at table
@@ -50,11 +53,44 @@ class Player {
         self.origin = origin
         
         self.rootNode.position = self.origin
+        self.rootNode.eulerAngles = orientation
         
         // update all group origins
     }
     
-    func render(origin:SCNVector3, rootNode:SCNNode) {
+    func updateLocalHotspot(radius:Float){
+        
+        // this is hostpot area near player indicator
+        // in the table's plane
+        
+    }
+    
+    func setupDefaultCardGroups() {
+        
+    }
+    
+    func setupDefaultHotspots(){
+        // TODO pass config from game settings or user settings
+        
+        // activeArea on table, sends cards to hand
+        var localHotspot = Hotspot(cardGroup:handGroup)
+        
+//        self.circleCenter = location;  //????
+//        self.circleRadius = radius;    //????
+        var activeAreaRadius = CGFloat(50.0)
+        
+        var path:UIBezierPath = UIBezierPath()
+        path.addArcWithCenter(CGPointZero, radius: activeAreaRadius, startAngle: 0.0, endAngle: CGFloat(M_PI*2.0), clockwise: true)
+        path.closePath()
+
+        var shape = SCNShape(path: path, extrusionDepth: 10)
+        var origin = SCNVector3Make(0, 0, -50.0) // in front of player
+        var localActiveArea = ActiveArea3D(node: SCNNode(geometry: shape), location:origin, rootNode:self.rootNode)
+        
+        localHotspot.activeArea = localActiveArea
+    }
+    
+    func render(origin:SCNVector3, orientation:SCNVector3, rootNode:SCNNode) {
         
         isRendered = true
         
@@ -67,6 +103,8 @@ class Player {
         
         // objects
         self.rootNode.position = self.origin
+        self.rootNode.eulerAngles = orientation
+        
         
         var handPlanePath:UIBezierPath = UIBezierPath(rect: CGRectMake(-HAND_PLANE_WIDTH/2, -HAND_PLANE_HEIGHT/2, HAND_PLANE_WIDTH, HAND_PLANE_HEIGHT))
         

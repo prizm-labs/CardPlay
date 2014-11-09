@@ -1297,11 +1297,11 @@ class GameViewController: UIViewController,
         
     }
     
-    func calculatePlayerPositions(count:Int, radius:Float, origin:SCNVector3) -> [SCNVector3] {
+    func calculatePlayerOrigins(count:Int, radius:Float, origin:SCNVector3) -> [SCNNode] {
         
         println("calculatePlayerPositions")
         
-        var positions:[SCNVector3] = []
+        var positions:[SCNNode] = []
         var angles:[Float] = []
         // +z maps to -y for points along circle
         
@@ -1323,9 +1323,14 @@ class GameViewController: UIViewController,
             let x = radius * cosf(theta) + origin.x
             let z = radius * sinf(theta) + origin.z
             
-            positions.append(SCNVector3Make(x, origin.y, z))
+            var newOrigin = SCNNode()
+            var facingRotation = SCNVector3Make(0, -CFloat(angle), 0)
+            // face inward towards table center
+            newOrigin.position = SCNVector3Make(x, origin.y, z)
+            newOrigin.eulerAngles = facingRotation
             
-            
+            positions.append(newOrigin)
+
         }
         
         return positions
@@ -1333,7 +1338,7 @@ class GameViewController: UIViewController,
     
     func updatePlayers(){
         
-        var positions = calculatePlayerPositions(players.count, radius: Float(TABLE_RADIUS/2), origin: SCNVector3Zero)
+        var origins = calculatePlayerOrigins(players.count, radius: Float(TABLE_RADIUS/2), origin: SCNVector3Zero)
         
         // is player rendered
         
@@ -1343,10 +1348,13 @@ class GameViewController: UIViewController,
             
             let player = p as Player
             
+            let origin = origins[index] as SCNNode
+            
             if (player.isRendered) {
-                player.updateOrigin(positions[index])
+                player.updateOrigin(origin.position, orientation:origin.eulerAngles)
             } else {
-                player.render(positions[index], rootNode: _scene.rootNode)
+                player.render(origin.position, orientation:origin.eulerAngles, rootNode: _scene.rootNode)
+                player.setupDefaultHotspots()
             }
             
             

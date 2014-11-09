@@ -8,6 +8,7 @@
 
 import Foundation
 import SpriteKit
+import SceneKit
 
 
 class UIOverlayScene:SKScene {
@@ -71,7 +72,7 @@ class UIOverlayScene:SKScene {
     
     func activateHotspot(hotspot:Hotspot?) {
         currentHotspot=hotspot
-        currentHotspot?.updateActionState(Hotspot.ActionState.pending)
+        currentHotspot?.updateActionState(Hotspot.ActionState.active)
     }
     
     //on pan update leaves edge
@@ -85,8 +86,7 @@ class UIOverlayScene:SKScene {
         
         if currentHotspot != nil {
             
-            currentHotspot?.updateActionState(Hotspot.ActionState.activated)
-            currentHotspot = nil
+            deactivateHotspot()
             
             return true
         } else {
@@ -143,24 +143,93 @@ class EdgeGroup {
 }
 
 class Hotspot {
+    // a hotspot links an activeArea to a playPoint or cardGroup
+    // allows user to swiftly move and manipulate cards
     
     enum ActionState {
-        case inactive, pending, activated
+        case inactive, active, disabled
     }
     
-    var playPoint:PlayPoint?
-    var location:CGPoint!
-    var actionState:ActionState = ActionState.inactive
+    enum AccessType {
+        case publicOnly, privateOnly, publicAndPrivate
+    }
     
-    init(location:CGPoint, playPoint:PlayPoint) {
-        self.location = location
+    var activeArea:ActiveArea? = nil
+    
+    var playPoint:PlayPoint? = nil
+    var cardGroup:CardGroup? = nil
+    
+    var actionState:ActionState = ActionState.inactive
+    var accessType:AccessType = AccessType.publicAndPrivate
+    
+    
+    init(playPoint:PlayPoint) {
+        //self.location = location
         self.playPoint = playPoint
     }
     
+    init(cardGroup:CardGroup) {
+        //self.location = location
+        self.cardGroup = cardGroup
+    }
+    
+
     func updateActionState(state:ActionState) {
         
         actionState = state
         
+    }
+    
+}
+
+class ActiveArea {
+    
+    var location:CGPoint!
+    
+    func activate() {
+        
+        
+    }
+    
+    func deactive() {
+        
+    }
+    
+    func disable() {
+        
+    }
+    
+    func enable() {
+        
+        
+    }
+}
+
+class ActiveArea2D:ActiveArea {
+    // rendered in SpriteKit layer
+    // i.e. along edges
+    
+    var indicatorNode:SKNode?
+    
+    init(node:SKNode) {
+        
+        self.indicatorNode = node
+    }
+}
+
+class ActiveArea3D:ActiveArea {
+    // rendered in SceneKit layer
+    // i.e. on table near player indicator
+    
+    var indicatorNode:SCNNode?
+    
+    
+    init(node:SCNNode, location:SCNVector3, rootNode:SCNNode) {
+        
+        self.indicatorNode = node
+        self.indicatorNode?.position = location
+        
+        rootNode.addChildNode(self.indicatorNode!)
     }
     
 }
