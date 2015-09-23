@@ -305,10 +305,9 @@ class GameViewController: UIViewController,
     func setupGestures() {
         
         
-        let sceneView = self.view as SCNView
+        let sceneView = self.view as! SCNView
         
-        
-        
+    
         // HitTest manager
         _hitTest = HitTest(sceneView:sceneView)
         
@@ -1029,6 +1028,17 @@ class GameViewController: UIViewController,
                     //TODO create active edge linked to play point
                 }
                 
+                // test card is held over active area
+                result = _hitTest.getResultFromHitTest(p, nodeName: "activeArea", searchHiddenNodes: true)
+                
+                if result != nil {
+                    
+                    println("object over active area!")
+                    
+                    
+                    
+                }
+                
             case .PlayerHand:
                 
                 //println("pan in hand perspective")
@@ -1266,6 +1276,8 @@ class GameViewController: UIViewController,
     override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
 
         var touch:UITouch? = touches.anyObject() as? UITouch
+        println("window location: \(touch?.locationInView(nil))")
+        println("view location: \(touch?.locationInView(self.view))")
         var p = touch?.locationInNode(uiOverlay)
        
         println("touch in overlay \(p?.x) , \(p?.y)")
@@ -1325,7 +1337,7 @@ class GameViewController: UIViewController,
             
             var newOrigin = SCNNode()
             var facingRotation = SCNVector3Make(0, -CFloat(angle), 0)
-            // face inward towards table center
+            // face inward towards table center, and lay parallel to table
             newOrigin.position = SCNVector3Make(x, origin.y, z)
             newOrigin.eulerAngles = facingRotation
             

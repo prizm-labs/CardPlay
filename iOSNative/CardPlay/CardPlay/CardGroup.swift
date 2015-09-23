@@ -96,7 +96,7 @@ class CardGroup :Equatable {
     func addCards(cards:NSMutableArray) {
         println("addCards")
         for card in cards {
-            let card:CardNode = card as CardNode
+            let card:CardNode = card as! CardNode
             self.addCard(card)
         }
         println("card group \(self.cards.count)")

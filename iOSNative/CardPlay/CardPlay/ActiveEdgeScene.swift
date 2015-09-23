@@ -228,6 +228,7 @@ class ActiveArea3D:ActiveArea {
         
         self.indicatorNode = node
         self.indicatorNode?.position = location
+        self.indicatorNode?.name = "activeArea"
         
         rootNode.addChildNode(self.indicatorNode!)
     }

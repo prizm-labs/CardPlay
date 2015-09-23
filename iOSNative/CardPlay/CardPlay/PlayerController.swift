@@ -77,15 +77,18 @@ class Player {
         
 //        self.circleCenter = location;  //????
 //        self.circleRadius = radius;    //????
-        var activeAreaRadius = CGFloat(50.0)
+        var radius = CGFloat(50.0)
+        var depth = CGFloat(10.0)
         
         var path:UIBezierPath = UIBezierPath()
-        path.addArcWithCenter(CGPointZero, radius: activeAreaRadius, startAngle: 0.0, endAngle: CGFloat(M_PI*2.0), clockwise: true)
+        path.addArcWithCenter(CGPointZero, radius: radius, startAngle: 0.0, endAngle: CGFloat(M_PI*2.0), clockwise: true)
         path.closePath()
 
-        var shape = SCNShape(path: path, extrusionDepth: 10)
+        var shape = SCNShape(path: path, extrusionDepth: depth)
         var origin = SCNVector3Make(0, 0, -50.0) // in front of player
-        var localActiveArea = ActiveArea3D(node: SCNNode(geometry: shape), location:origin, rootNode:self.rootNode)
+        var node = SCNNode(geometry: shape)
+        node.eulerAngles = SCNVector3Make(CFloat(M_PI_2),0,0)
+        var localActiveArea = ActiveArea3D(node: node, location:origin, rootNode:self.rootNode)
         
         localHotspot.activeArea = localActiveArea
     }
